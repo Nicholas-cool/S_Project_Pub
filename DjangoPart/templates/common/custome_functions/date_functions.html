@@ -1,0 +1,166 @@
+<script>
+    // date 对象转化为字符串
+    function dateToFormatString_Day(date) {
+        let y = date.getFullYear();
+        let m = date.getMonth() + 1;
+        m = m < 10 ? ('0' + m) : m;
+        let d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        return y + '-' + m + '-' + d;
+　　}
+
+    // 日期字符串转化成中文格式
+    function dateStringToChinese(date_str){
+        let date_list = date_str.split('-');
+        return date_list[0] + '年' + date_list[1] + '月' + date_list[2] + '日';
+    }
+
+    // 分钟数转化成中文格式
+    function minutesToChinese(minutes){
+        let n_hours = Math.floor(minutes / 60);
+        let n_minutes = minutes % 60;
+        return n_hours.toString() + '小时 ' + n_minutes.toString() + '分钟';
+    }
+
+   function dateToFormatString_Clock (date) {
+        let y = date.getFullYear();
+        let m = date.getMonth() + 1;
+        m = m < 10 ? ('0' + m) : m;
+        let d = date.getDate();
+        d = d < 10 ? ('0' + d) : d;
+        let h = date.getHours();
+        h = h < 10 ? ('0' + h) : h;
+        let minute = date.getMinutes();
+        minute = minute < 10 ? ('0' + minute) : minute;
+        let second = date.getSeconds();
+        second = second < 10 ? ('0' + second) : second;
+        return y + '-' + m + '-' + d + ' ' + h + ':' + minute + ':' + second;
+　　}
+
+    function dateToFormatString_ClockWithWeekdayInfo(date) {
+        return date.toLocaleString() + " 星期" + "日一二三四五六".charAt(date.getDay());
+    }
+
+    /* 获取今天的日期 */
+    function get_today_date() {
+        return dateToFormatString_Day(new Date());
+    }
+
+    /* 获取本月的第一天、最后一天日期 */
+    function get_month_start_end_date() {
+        let date = new Date();
+        let firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        let lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        return {
+            "start": dateToFormatString_Day(firstDay),
+            "end": dateToFormatString_Day(lastDay)
+        }
+    }
+
+    /* 获取本周的第一天、最后一天日期 */
+    function get_week_start_end_date() {
+        let date = new Date();
+
+        /* JS获取本周开始日期 */
+        if (date.getDay() === 0) {
+            date.setDate(date.getDate() - 7 + 1);
+        } else {
+            date.setDate(date.getDate() - date.getDay() + 1);
+        }
+        let week_start_str = dateToFormatString_Day(date);
+
+        /* JS获取本周结束日期 */
+        date.setDate(date.getDate() + 6);
+        let week_end_str = dateToFormatString_Day(date);
+
+        return {
+            "start": week_start_str,
+            "end": week_end_str
+        }
+    }
+
+    /* 获取某月的第一天、最后一天日期 */
+    function get_fixed_month_start_end_date(day_str) {
+        let date = new Date(day_str);
+        let firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        let lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+        return {
+            "start": dateToFormatString_Day(firstDay),
+            "end": dateToFormatString_Day(lastDay)
+        }
+    }
+
+    /* 获取某周的第一天、最后一天日期 */
+    function get_fixed_week_start_end_date(day_str) {
+        let date = new Date(day_str);
+
+        /* JS获取本周开始日期 */
+        if (date.getDay() === 0) {
+            date.setDate(date.getDate() - 7 + 1);
+        } else {
+            date.setDate(date.getDate() - date.getDay() + 1);
+        }
+        let week_start_str = dateToFormatString_Day(date);
+
+        /* JS获取本周结束日期 */
+        date.setDate(date.getDate() + 6);
+        let week_end_str = dateToFormatString_Day(date);
+
+        return {
+            "start": week_start_str,
+            "end": week_end_str
+        }
+    }
+
+    /* 获取特定日期前一天日期 */
+    function get_fixed_date_prev_day(day_str) {
+        let d_temp = new Date(day_str);
+        d_temp.setDate(d_temp.getDate() - 1);  // 往前推一天
+        return dateToFormatString_Day(d_temp);
+    }
+
+    /* 获取特定日期后一天日期 */
+    function get_fixed_date_next_day(day_str) {
+        let d_temp = new Date(day_str);
+        d_temp.setDate(d_temp.getDate() + 1);  // 往后推一天
+        return dateToFormatString_Day(d_temp);
+    }
+
+    /* 获取特定日期前一周日期 */
+    function get_fixed_date_prev_week_start_end_date(day_str) {
+        let this_week = get_fixed_week_start_end_date(day_str);
+        let last_week_last_day = get_fixed_date_prev_day(this_week['start']);
+        return get_fixed_week_start_end_date(last_week_last_day);
+    }
+
+    /* 获取特定日期后一周日期 */
+    function get_fixed_date_next_week_start_end_date(day_str) {
+        let this_week = get_fixed_week_start_end_date(day_str);
+        let next_week_first_day = get_fixed_date_next_day(this_week['end']);
+        return get_fixed_week_start_end_date(next_week_first_day);
+    }
+
+    /* 获取特定日期前一月日期 */
+    function get_fixed_date_prev_month_start_end_date(day_str) {
+        let this_month = get_fixed_month_start_end_date(day_str);
+        let last_month_last_day = get_fixed_date_prev_day(this_month['start']);
+        return get_fixed_month_start_end_date(last_month_last_day);
+    }
+
+    /* 获取特定日期后一月日期 */
+    function get_fixed_date_next_month_start_end_date(day_str) {
+        let this_month = get_fixed_month_start_end_date(day_str);
+        let next_month_first_day = get_fixed_date_next_day(this_month['end']);
+        return get_fixed_month_start_end_date(next_month_first_day);
+    }
+    
+    /* 是否是合法的日期字符串 */
+    function if_legal_date_str(str) {
+        // 尝试将日期字符串转换为 Date 对象
+        const date = new Date(str);
+        // 如果日期不是 NaN，则它是一个合法的日期
+        return !isNaN(date.getTime());
+    }
+</script>

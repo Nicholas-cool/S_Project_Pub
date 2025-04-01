@@ -1,0 +1,197 @@
+<!-- 此文件代码用于项目优化，目录如下：
+    1、所有冗长的element赋值采取for循环的形式填充
+    2、处理文本框显示问题
+    3、theme模板插值
+    4、隐藏域代码优化
+    5、设置可编辑和不可编辑函数的整合
+    7、Echats 日历热力图
+    8、Layui Select 联动选择框实现
+-->
+
+<!-- 1、所有冗长的element赋值采取for循环的形式填充 -->
+<script>
+    // 采用循环进行内容的填充 key: 需要填充元素id; value: 需要填充的值；
+    let element_id_value_map = {
+        "element_id": actual_value
+    }
+    for (let key_x in element_id_value_map) {
+        document.getElementById(key_x).value = element_id_value_map[key_x];
+    }
+
+    // 采用循环进行元素属性处理 ele: 需要填充元素id; process: 对disable属性的赋值
+    let element_id_list = [
+        "element_id",
+    ]
+    for (let idx in element_id_list) {
+        document.getElementById(element_id_list[idx]).disabled = "";
+    }
+</script>
+
+<!-- 2、处理文本框显示问题 -->
+<script>
+    data_json["description"].replace(/\\n/g, "\n");
+</script>
+
+<!-- 3、theme模板插值 -->
+<div>
+    {{ theme.main_right.bgcolor }}
+</div>
+
+<!-- 4、隐藏域代码优化 -->
+<div>
+    <input type="hidden" id="item_id">
+</div>
+
+<!-- 5、设置可编辑和不可编辑函数的整合 -->
+<script>
+    function xxx_editable(param) {
+        // 对 param 预处理
+        disabled_str = '';
+        if (param === 'no'){
+            disabled_str = 'disabled';
+        }
+        // 采用循环进行元素属性处理 ele: 需要填充元素id; process: 对disable属性的赋值
+        var element_id_list = [
+            "element_id",
+        ]
+        for (idx in element_id_list) {
+            document.getElementById(element_id_list[idx]).disabled = disabled_str;
+        }
+    }
+</script>
+
+<!-- 7、Echats 日历热力图 -->
+<script>
+    import * as echarts from 'echarts';
+
+    var chartDom = document.getElementById('main');
+    var myChart = echarts.init(chartDom, 'dark');
+    var option;
+
+    option = {
+        tooltip: {
+            position: 'bottom',
+            formatter: function (p) {
+                var format = echarts.format.formatTime('yyyy-MM-dd', p.data[0]);
+                return format + '<br/>' + 'Count: ' + p.data[1];
+            }
+        },
+        visualMap: {
+            min: 0,
+            max: 3,
+            calculable: false,
+            show: false,
+            orient: 'horizontal',
+            left: 'center',
+            inRange: {
+                color: ['#100C2A', '#AEBBFF', '#4F55FF', '#00f']
+                // color     : ["#eff", "blue"]
+            }
+        },
+        calendar: [
+            {
+                left: '8%',
+                orient: 'vertical',
+                cellSize: [80, 25],
+                range: '2022-08',
+
+                dayLabel: {
+                    nameMap: 'cn'
+                },
+                monthLabel: {
+                    margin: 20,
+                    nameMap: 'cn',
+                    show: false
+                },
+                yearLabel: {
+                    margin: 40,
+                    nameMap: 'cn',
+                    show: false
+                },
+                itemStyle: {
+                    borderColor: '#ccc'
+                },
+                splitLine: {
+                    lineStyle: {
+                        width: 1,
+                        color: '#eff'
+                    }
+                }
+            }
+        ],
+        series: [
+            {
+                type: 'heatmap',
+                coordinateSystem: 'calendar',
+                calendarIndex: 0,
+                label: {
+                    show: true,
+                    formatter: function (params) {
+                        return Number(params.data[0].substring(8, 10));
+                    }
+                },
+                data: [
+                    ['2022-08-01', '0'],
+                    ['2022-08-02', '2'],
+                    ['2022-08-03', '0'],
+                    ['2022-08-04', '0'],
+                    ['2022-08-05', '1']
+                ]
+            }
+        ]
+    };
+
+    option && myChart.setOption(option);
+</script>
+
+<!-- 8、Layui Select 联动选择框实现 -->
+<script>
+    layui.use(['layer', 'jquery', 'form'], function () {
+        var layer = layui.layer,
+            $ = layui.jquery,
+            form = layui.form;
+
+        form.on('select(periodicity_select)', function (data) {
+            // alert(data.value);  // 当前选中的value
+
+            // 清空联动框2、3的可选项
+            document.getElementById("period_select").innerHTML = '<option value="">请选择周期</option>';
+            document.getElementById("periodicity_detail").innerHTML = '<option value="">请输入具体时间</option>';
+
+            // 根据data添加联动框2的可选项
+            if (data.value == 'everyperiod') {
+                $('#period_select').append('<option value="everyperiod_yearly">每年</option>');
+                $('#period_select').append('<option value="everyperiod_monthly">每月</option>');
+                $('#period_select').append('<option value="everyperiod_weekly">每周</option>');
+                $('#period_select').append('<option value="everyperiod_daily">每天</option>');
+            } else if (data.value == 'iterval') {
+                $('#period_select').append('<option value="iterval_days">间隔天</option>');
+                $('#period_select').append('<option value="iterval_weeks">间隔周</option>');
+                $('#period_select').append('<option value="iterval_months">间隔月</option>');
+            }
+            form.render('select'); // 刷新layui的select框
+        });
+
+        form.on('select(period_select)', function (data) {
+            // alert(data.value);  // 当前选中的value
+            // 清空联动框3的可选项
+            document.getElementById("periodicity_detail").innerHTML = '<option value="">请输入具体时间</option>';
+
+            // 根据data添加联动框3的可选项
+            if (data.value == 'everyperiod_weekly') {
+                week_list = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+                value_list = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Satuday', 'Sunday']
+                for (idx in week_list) {  // 循环插入选择项
+                    $('#periodicity_detail').append('<option value=everyperiod_weekly_' + value_list[idx] + '>' + week_list[idx] + '</option>');
+                }
+            } else if (data.value == 'iterval_days') {
+                $('#periodicity_detail').append('<option value="iterval_days_one">隔1天</option>');
+                $('#periodicity_detail').append('<option value="iterval_days_two">隔2天</option>');
+                $('#periodicity_detail').append('<option value="iterval_days_three">隔3天</option>');
+                $('#periodicity_detail').append('<option value="iterval_days_four">隔4天</option>');
+                $('#periodicity_detail').append('<option value="iterval_days_five">隔5天</option>');
+            }
+            form.render('select'); // 刷新layui的select框
+        });
+    });
+</script>

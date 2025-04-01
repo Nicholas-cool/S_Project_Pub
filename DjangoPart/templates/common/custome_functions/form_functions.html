@@ -1,0 +1,21 @@
+<script>
+    // 表单可编辑状态切换
+    function form_editable_switch(element_id_list, param) {
+        // 基于 param 判断切换状态
+        let disabled_str = param === 'no' ? 'disabled' : '';
+        // 循环进行元素属性处理
+        for (let idx in element_id_list) {
+            document.getElementById(element_id_list[idx]).disabled = disabled_str;
+        }
+        layui.form.render('select');
+    }
+
+    // 表单数据清空
+    function clear_form_data(element_id_list) {
+        // 循环进行元素处理
+        for (let idx in element_id_list) {
+            $('#' + element_id_list[idx]).val("");
+        }
+        layui.form.render('select');
+    }
+</script>

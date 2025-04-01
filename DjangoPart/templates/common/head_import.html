@@ -1,0 +1,33 @@
+<!-- 需要导入的插件 -->
+
+<!-- 引入 jQuery 框架-->
+<script src="{% static 'plugins/jquery-3.6.0.min.js' %}"></script>
+
+<!-- 引入 fullcalendar 框架-->
+<link type="text/css" rel='stylesheet' href="{% static 'plugins/fullcalendar-5.9.0/lib/main.css' %}" />
+<script type="text/javascript" src="{% static 'plugins/fullcalendar-5.9.0/lib/main.js' %}"></script>
+
+<!-- 引入 bootstrap 框架（需要依赖 jQuery，上面已经引入） -->
+<link rel="stylesheet" href="{% static 'plugins/bootstrap-5.0.2-dist/css/bootstrap.min.css' %}">
+<script src="{% static 'plugins/bootstrap-5.0.2-dist/js/bootstrap.min.js' %}"></script>
+
+<!-- LayUI 框架（2.9.8版本） -->
+<link rel="stylesheet" href="{% static 'plugins/layui-v2.9.18/css/layui.css' %}">
+<script src="{% static 'plugins/layui-v2.9.18/layui.js' %}"></script>
+
+<!-- 引入 Echarts 插件 -->
+<script src="{% static 'plugins/echarts.min.js' %}"></script>
+
+{#<!-- 引入highcharts依赖文件 -->#}
+{#<script src="/static/plugins/highcharts-gantt-9.3.2/highcharts-gantt.js"></script>#}
+{#<!-- 引入highcharts主题 -->#}
+{#<script src="/static/plugins/highcharts-gantt-9.3.2/themes/dark-unica.js"></script>#}
+
+<!-- 【自定义】引入自定义样式文件 -->
+<link rel="stylesheet" href="{% static 'custom_css/layui_layer_style.css' %}">
+<link rel="stylesheet" href="{% static 'custom_css/layui_table_style.css' %}">
+<link rel="stylesheet" href="{% static 'custom_css/layui_form_style.css' %}">
+<link rel="stylesheet" href="{% static 'custom_css/layui_timeline_style.css' %}">
+<link rel="stylesheet" href="{% static 'custom_css/full_calendar_style.css' %}">
+<link rel="stylesheet" href="{% static 'custom_css/right_section_style.css' %}">
+<link rel="stylesheet" href="{% static 'custom_css/page_common_style.css' %}">

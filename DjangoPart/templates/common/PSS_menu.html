@@ -1,0 +1,140 @@
+{# 引用方式：{% include 'common/PSS_menu.html' %} #}
+
+<div class="pssMenuClass">
+    <button class="pssMenuClassBtn" onclick="display_menu();">
+        <p style="color: #eff; border:0; margin-block-end: 0; font-size: 16px;"><b style="line-height: 1.5;">More</b></p>
+    </button>
+    <div class="pssMenuheader" style="font-size: 16px;">
+        <div class="pssMenuNav-bar" id="pssMenuNav_bar_id">
+            <div class="pssMenuNav-bg">
+                <div class="pssMenuNav-top">
+                    <div class="pssMenuNav-content">
+                        <ul class="pssMenuNav-content-box">
+                            <li class="pssMenuIndex on">
+                                <span><a href="javascript:void(0)">主页</a></span>
+                                <ul>
+                                    <li><a href="/00homepage/#homepage_main" target="_blank" class="to_link">系统主页</a></li>
+                                    <li><a href="/06personal_page" target="_blank" class="to_link">个人界面</a></li>
+                                    <li><a href="/06personal_page" target="_blank" class="to_link">终极主线</a></li>
+                                </ul>
+                            </li>
+                            <li class="special">
+                                <span><a href="javascript:void(0)">系统导航</a></span>
+                                <ul>
+                                    <li><a href="/01mindmap/#node_detail_section" target="_blank" class="to_link">MindMap 模块</a></li>
+                                    <li><a href="/02data_form/#form_subpage" target="_blank" class="to_link">DataForm 模块</a></li>
+                                    <li><a href="/02data_form/#schedule_subpage" target="_blank" class="to_link"> -- 日程板块</a></li>
+                                    <li><a href="/02data_form/#chart_subpage" target="_blank" class="to_link"> -- 统计图表</a></li>
+                                    <li><a href="/02data_form/#clockin_subpage" target="_blank" class="to_link"> -- 打卡事项</a></li>
+                                </ul>
+                            </li>
+                            <li class="user">
+                                <span><a href="javascript:void(0)">日常规划</a></span>
+                                <ul>
+                                    <li><a href="/03daily_plan" target="_blank" class="to_link">DailyPlan 模块</a></li>
+                                    <li><a href="/12human_page/#info_subpage" target="_blank" class="to_link">Human 模块</a></li>
+                                </ul>
+                            </li>
+                            <li class="cat">
+                                <span><a href="javascript:void(0)">总体规划</a></span>
+                                <ul>
+                                    <li><a href="/10annual_main_plan/#timeline_subpage" target="_blank" class="to_link">年度主线计划</a></li>
+                                    <li><a href="/05wishlist" target="_blank" class="to_link">WishList 模块</a></li>
+                                    <li><a href="/08bookshelf" target="_blank" class="to_link">BookShelf 模块</a></li>
+                                    <li><a href="/08a_annual_book_report/#read_list_section" target="_blank" class="to_link">-- 年度读书计划</a></li>
+                                </ul>
+                            </li>
+                            <li class="cooperation">
+                                <span><a href="javascript:void(0)">实用工具</a></span>
+                                <ul>
+                                    <li><a href="/07account_manage/#account_detail_section" target="_blank" class="to_link">Account 模块</a></li>
+                                    <li><a href="/04money_arrange/#bill_subpage" target="_blank" class="to_link">Money 模块</a></li>
+                                    <li><a href="/09travel_map" target="_blank" class="to_link">TravelMap 模块</a></li>
+                                    <li><a href="/13document_page/#normal_docs_subpage" target="_blank" class="to_link">Document 模块</a></li>
+                                    <li><a href="/13document_page/#worldview_subpage" target="_blank" class="to_link"> -- 世界观</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--PSS菜单部分js-->
+<script>
+    function display_menu() {
+        // 获取pssMenuNav-bar的display属性
+        let menu = document.getElementById("pssMenuNav_bar_id");
+        let menu_state = menu.style.display;
+        // alert(menu_state);
+
+        if (menu_state) {     // 如果是block,那么设置为none
+            menu.style.display = null;
+        } else {     // 如果是none,那么设置为block
+            menu.style.display = 'block';
+        }
+    }
+</script>
+
+<!--PSS菜单部分css(仅对本HTML生效)-->
+<script>
+    // 设置跳转后自动缩回导航栏
+    $(".to_link").attr('onclick', 'click_link()');
+    function click_link(){
+        document.getElementById("pssMenuNav_bar_id").style.display = null;
+    }
+</script>
+<style>
+    .pssMenuClass {
+        width: 100%;
+        height: 100%;
+        background-color: #3276B1;
+        overflow: visible;
+        display: inline-block;
+        text-align: left;
+        font-family: 微軟正黑體, serif;
+        font-weight: bold;
+    }
+
+    .pssMenuClassBtn {
+        border: 0;
+        background-color:#3276B1;
+        cursor: pointer;
+        margin-left: 3%;
+        height: 100%;
+        line-height: 100%;
+        transform: translateX(-50%);
+    }
+
+.pssMenuNav-bar{display: none;}
+
+body{margin:0;padding:0;font-family:arial,tahoma,'Microsoft Yahei','\5b8b\4f53',sans-serif;}
+a{padding-bottom:3px;color:white;text-decoration:none;}
+.pssMenuClass a:hover{color:#000;}
+
+ul{list-style:none;padding:0;margin:0;}
+li{text-align:center;}
+
+.pssMenuNav-bar{position:relative;z-index:1000;overflow:hidden;min-width:900px;height:45px;}
+.pssMenuNav-bar:hover{overflow:visible;-webkit-transition:all 0.5s ease;transition:all 0.5s ease;}
+.pssMenuNav-bg{position:absolute;width:100%;height:240px;background:#24619c;background:rgba(36,97,158,.95);-webkit-transition:.3s;transition:.3s;z-index:9999;}
+.pssMenuNav-top{height:43px; background:#428BCA;}
+
+.pssMenuNav-content{position:absolute;width:80%;left:10%;}
+.pssMenuNav-content-box{position:absolute;top:0;left:0;width:100%;}
+.pssMenuNav-content-box>li{float:left;line-height:43px;}
+.pssMenuNav-content-box>li:hover{background:#19508b;}
+.pssMenuNav-content-box>li>span>a{display:block;width:100%;margin:0;height:41px;line-height:41px;}
+.pssMenuNav-content-box>li:hover>span>a{background:#338ce6;}
+ul>li.pssMenuIndex,ul>li.cat,ul>li.special,ul>li.user,ul>li.cooperation,ul>li.mobile{width:140px;}
+ul>li.pssMenuIndex{height:43px;}
+ul.pssMenuNav-content-box>li>ul{border-right:solid 1px #3a6fa2;margin:10px 0 6px}
+ul.pssMenuNav-content-box>li>ul:after{visibility:hidden;display:block;font-size:0;content:"";clear:both;height:0}
+.pssMenuNav-content-box>li:hover>ul{border-right:none;padding-right:1px;}
+ul.pssMenuNav-content-box>li>ul>li{float:left;width:100%;line-height:2;text-align:center;}
+{#ul.pssMenuNav-content-box>li.cat>ul>li{width:49%;}#}
+ul.pssMenuNav-content-box>li>ul>li>a{display:block;width:100%;}
+</style>
+

@@ -1,0 +1,87 @@
+<style>
+    /* 导航栏样式 */
+    .header_nav_section {
+        height: 100%;
+        background: #3C3F41;
+        margin: 0 auto;
+        width: 100%;
+        display: flex;
+        align-items: center; /* 水平居中 */
+    }
+
+    .header_nav_label {
+        float: left;
+        width: 100px;
+        line-height: 50px;
+        color: #DDD;
+        font-size: 18px;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        margin-left: 2%;
+        font-weight: bold;
+    }
+
+    .header_nav_div {
+        margin-left: 20px;
+        font-size: 16px;
+    }
+
+    .header_nav_div a {
+        margin-left: 10px;
+    }
+
+    .header_nav_div a:hover {
+        color: #B0C4DE;
+    }
+
+    /* 导航 a 标签的是否选中状态 */
+    .header_nav_active {
+        background-color: #3276B1;
+        color: #eff;
+        text-decoration: none;
+        margin: 2px;
+        padding: 4px;
+        border-radius: 5px;
+    }
+
+    .header_nav_negative {
+        color: #eff;
+        text-decoration: none;
+        margin: 2px;
+        padding: 4px;
+        border-radius: 5px;
+    }
+
+    /* 页面展示和隐藏样式（点击导航栏显示和隐藏） */
+    .ct-page-hidden {
+        display: none;
+    }
+
+    .ct-page-hidden:target {
+        display: block;
+    }
+</style>
+
+<script>
+    // 顶部导航选中显示
+    function header_nav_show() {
+        $(".header_nav_div").find("a").each(function () {
+            let a = $(this);
+            // alert(location.hash)
+
+            if ($(a).attr("href") === location.hash) {
+                $(a).removeClass("header_nav_active");
+                $(a).removeClass("header_nav_negative");
+                $(a).addClass("header_nav_active");
+            } else {
+                $(a).removeClass("header_nav_active");
+                $(a).removeClass("header_nav_negative");
+                $(a).addClass("header_nav_negative");
+            }
+        });
+    }
+
+    // 点击到达子页面后自动刷新，得到最新的数据
+    function reload_subpage() {
+        location.reload();
+    }
+</script>
