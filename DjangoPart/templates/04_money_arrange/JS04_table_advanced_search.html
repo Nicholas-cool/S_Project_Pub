@@ -1,0 +1,131 @@
+<!-- 资金数据表格（Table01 & Table02 共用）高级检索功能 -->
+<script>
+    // 根据 “收支” 下拉框值的变化，更新 “类型” 中相应的选项
+    function money_record_search_inout_select_change(){
+        let select_data = $('#money_record_search_inout_select').val();
+        common_get_select_list('money_record_search_category_select', '04_money_arrange',
+            select_data + 'come_category', 'all', '全部');
+    }
+
+    // 监视高级搜索 “日期” 输入框的变化，并对应调整另一日期
+    function change_search_date(start_or_end){
+        let start_date = $('#money_record_search_start_date').val();
+        let end_date = $('#money_record_search_end_date').val();
+
+        if (start_date.length < 1 || end_date.length < 1){
+            return
+        }
+
+        if (start_or_end === 'start'){    // 根据当前选择的开始时间，调整结束时间
+            if (end_date < start_date){
+                $('#money_record_search_end_date').val(start_date);
+            }
+        } else if (start_or_end === 'end'){    // 根据当前选择的结束时间，调整开始时间
+            if (end_date < start_date){
+                $('#money_record_search_start_date').val(end_date);
+            }
+        }
+    }
+
+    // 加载 “来源” 下拉框的选项
+    function money_record_search_source_select_load(){
+        $.ajax({
+            url:{% url 'e_get_money_positions' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (data_dic) {
+                // 清空原有option
+                document.getElementById("money_record_search_source_select").innerHTML =
+                    '<option value="all">全部</option>';
+
+                // 遍历数据data_dic，逐项添加入select列表
+                $.each(data_dic, function (i, item) {
+                    if (item['hidden'] !== 'all'){
+                        $("#money_record_search_source_select").append(
+                            "<option value= " + i + " >" + item.name + "</option>");
+                    }
+                });
+            }
+        })
+    }
+
+    // 重载数据表格 回调函数
+    function reload_money_record_form(ledger_id = null){
+        money_record_table.reload({
+            url: '../e_search_money_record_form',
+            where: {
+                'search_ledger_id': ledger_id
+            }
+            , page: {
+                curr: '1'  // 展示第一页
+                // curr: $('.layui-laypage-skip input')[0].value
+            }
+        });
+    }
+
+    // 资金记录表格 - 高级检索
+    function search_money_record_form(ledger_id = null){
+
+        let search_text = document.getElementById('money_record_search_input').value;
+        let search_start_date = document.getElementById('money_record_search_start_date').value;
+        let search_end_date = document.getElementById('money_record_search_end_date').value;
+        let search_inout = document.getElementById('money_record_search_inout_select').value;
+        let search_category = document.getElementById('money_record_search_category_select').value;
+        let search_position = document.getElementById('money_record_search_source_select').value;
+        let search_order = document.getElementById('money_record_search_order_select').value;
+
+        // 重新加载数据表格
+        money_record_table.reload({
+            url: '../e_search_money_record_form',
+            where: {  // 设定异步数据接口的额外参数，任意设
+                'search_text': search_text,
+                'search_start_date': search_start_date,
+                'search_end_date': search_end_date,
+                'search_inout': search_inout,
+                'search_category': search_category,
+                'search_position': search_position,
+                'search_order': search_order,
+                'ledger_id': ledger_id
+            }
+            , page: {
+                curr: '1'
+            }
+        });
+    }
+</script>
+
+<!-- 日期选择器渲染 -->
+<script>
+    function render_laydate() {
+        layui.laydate.render({
+            elem: '#add_money_record_layer_date'
+        });
+
+        layui.laydate.render({
+            elem: '#transfer_money_layer_date'
+        });
+
+        layui.laydate.render({
+            elem: '#money_category_chart_layer_start_date'
+        });
+
+        layui.laydate.render({
+            elem: '#money_category_chart_layer_end_date'
+        });
+
+        layui.laydate.render({
+            elem: '#money_record_search_start_date'
+            , done: function (value, date, endDate) {
+                change_search_date('start');
+            }
+        });
+
+        layui.laydate.render({
+            elem: '#money_record_search_end_date'
+            , done: function (value, date, endDate) {
+                change_search_date('end');
+            }
+        });
+    }
+</script>

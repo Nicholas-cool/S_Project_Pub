@@ -1,0 +1,101 @@
+/*  LayUI Layer 样式  */
+
+/* 总体背景色 */
+.layui-layer {
+    background-color: #2B2B2B;
+}
+
+/* 标题部分 */
+.layui-layer-title {
+    border-bottom: 1px solid #2B2B2B;
+    color: #eff;
+}
+
+/* 右上角关闭按钮位置调整 */
+.layui-layer-setwin .layui-layer-close2 {
+    right: 0;
+    top: -5px;
+}
+
+/* 自定义默认样式 */
+.ct-layui-layer {
+    display: none;
+    padding: 10px;
+    line-height: 35px;
+    background-color: #393D49;
+    color: #fff;
+    font-weight: 300;
+    font-size: 14px;
+    font-family: 黑体, serif;"
+}
+
+/** 表单元素宽度 **/
+.ct-layui-layer-form-item {
+    width: 47%;
+    margin: 1%;
+    display: inline-block;
+    position: relative;
+}
+
+.ct-layui-layer-form-item-long {
+    width: 94%;
+    margin: 1%;
+    display: inline-block;
+    position: relative;
+}
+
+.ct-layui-layer-form-item-ipt {
+    display: inline-block;
+    position: absolute;
+    width: 80%;
+    left: 20%;
+    background-color: #eee;
+    z-index: 10;
+}
+
+.ct-layui-layer-form-item-ipt-long {
+    display: inline-block;
+    position: absolute;
+    width: 93%;
+    left: 10%;
+    background-color: #eee;
+    z-index: 10;
+}
+
+.ct-layui-layer-form-item-select {
+    display: inline-block;
+    position: absolute;
+    left: 20%;
+    width: 80%;
+    margin-left: 0;
+}
+
+.ct-layui-layer-form-textarea-div {
+    margin: 1%;
+}
+
+.ct-layui-layer-form-item-textarea {
+    width: 99%;
+    height: 200px;
+    margin-left: 0;
+    display: inline-block;
+    resize: none;
+    font-size: 15px;
+    font-family: 黑体, serif;
+}
+
+/* 按钮层样式 */
+.ct-layui-layer-btn-div {
+    width: 100%;
+    text-align: center;
+    margin-top: 10px;
+    margin-bottom: 6px;
+}
+
+.ct-layui-layer-btn {
+    font-size: 18px !important;
+    height: 30px !important;
+    font-family: 黑体, serif;
+    margin-right: 0;
+    padding: 0 15px 0;
+}

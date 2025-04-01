@@ -1,0 +1,82 @@
+<div id="fixed_assets_subpage" class="ct-page-hidden" style="height: 100%; overflow-y: auto; padding: 10px;">
+{#    <!-- 顶部控制栏 -->#}
+{#    <div style="width: 98%; margin: 10px; border: 2px solid #abb; border-radius: 10px;#}
+{#        padding: 10px; font-size: 16px; font-family: 微軟正黑體,serif; font-weight: bold;">#}
+{#        <div class="layui-inline" style="width: 10%;">#}
+{#            <select class="layui-input" id="ledger_order_select" autocomplete="off"#}
+{#                    style="background-color: #ddd;">#}
+{#                <option value="order_end_time">按结束时间排序</option>#}
+{#                <option value="order_start_time">按开始时间排序</option>#}
+{#            </select>#}
+{#        </div>#}
+{#        <button type="button" class="layui-btn" style="margin-left:10px; background-color: #6685c2"#}
+{#                onclick="openAddLedgerLayer()">新增账本+#}
+{#        </button>#}
+{#    </div>#}
+{##}
+{#    <!-- 主体部分 -->#}
+{#    <div id="ledger_container"></div>#}
+</div>
+
+<script>
+    {#function load_ledger_page() {#}
+    {#    $.ajax({#}
+    {#        url:{% url 'e_get_ledgers' %},#}
+    {#        type: 'GET',#}
+    {#        async: false,#}
+    {#        data: {},#}
+    {#        success: function (data_dic) {#}
+    {#            // 清空原有内容#}
+    {#            document.getElementById('ledger_container').innerHTML = '';#}
+    {##}
+    {#            // 遍历数据，渲染账本#}
+    {#            $.each(data_dic, function (i, item) {#}
+    {#                let ledger_item = '' +#}
+    {#                    '<div class="ledger_div">' +#}
+    {#                        '<a class="ledger_a" href="/04a_ledger_detail/#' + i + '" target="_blank">' +#}
+    {#                            '<div class="ledger_title">' + item['name'] + '</div>' +#}
+    {#                            '<div class="ledger_desc">' + item['desc'] + '</div>' +#}
+    {#                        '</a>' +#}
+    {#                    '</div>';#}
+    {#                $('#ledger_container').append(ledger_item);#}
+    {#            });#}
+    {#        }#}
+    {#    })#}
+    {# }#}
+</script>
+
+<style>
+    {#.ledger_div {#}
+    {#    width: 220px;#}
+    {#    height: 280px;#}
+    {#    margin: 10px;#}
+    {#    display: inline-block;#}
+    {#    border-radius: 10px;#}
+    {#    position: relative;#}
+    {#    background-color: #1b6d85;#}
+    {#    padding: 15px;#}
+    {# }#}
+    {##}
+    {#.ledger_a:hover {#}
+    {#    color: #bbb;#}
+    {# }#}
+    {##}
+    {#.ledger_title {#}
+    {#    position: absolute;#}
+    {#    width: 100%;#}
+    {#    height: 20%;#}
+    {#    font-size: 20px;#}
+    {#    font-family: 微軟正黑體,serif;#}
+    {#    font-weight: bold;#}
+    {# }#}
+    {##}
+    {#.ledger_desc {#}
+    {#    position: absolute;#}
+    {#    top: 20%;#}
+    {#    width: 100%;#}
+    {#    height: 60%;#}
+    {#    font-size: 15px;#}
+    {#    font-family: 微軟正黑體,serif;#}
+    {#    font-weight: bold;#}
+    {# }#}
+</style>

@@ -1,0 +1,92 @@
+/* 常用自定义样式 */
+.ct-maintop-div-full {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 5%;
+    width: 100%;
+}
+
+.ct-maintop-div-sub-full {
+    width: 94%;
+    height: 100%;
+    background-color: #3C3F41;
+    color: #eff;
+    display: inline-block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: 2000;
+}
+
+/* a 标签的 hover 颜色设定 */
+a:hover {
+    color: #B0C4DE;
+}
+
+/* 自定义文本卡片样式 */
+.ct-card-container {
+    display: flex;
+    align-items: start;
+    position: relative;
+}
+
+.ct-card {
+    display: flex;
+    width: 345px;
+    margin: 20px 0 0 20px;
+    background-color: #bbb;
+    box-shadow: 0 5px 8px #777;
+    padding: 15px 15px 10px;
+    position: relative;
+    border-radius: .5rem;
+    flex-direction: column;
+    user-select: none;   /* 不允许文字选中 */
+}
+
+.ct-card-text {
+    font-size: 16px;
+    font-family: Elephant, serif;
+    font-weight: bolder;
+    position: relative;
+    overflow: hidden;
+}
+
+.ct-card-hr {
+    background-color: #335cad;
+    border: 0;
+    height: 2px !important;
+}
+
+.ct-card-bottom {
+    position: relative;
+    font-size: 14px;
+    font-family: 幼圆, serif;
+    font-weight: bold;
+}
+
+.ct-card-ele-border-blue {
+    border: #4c42c1 2px solid;
+}
+
+.ct-card-ele-border-brown {
+    border: #622029 2px solid;
+}
+
+.ct-card-bottom-ele {
+    display: inline-block;
+    margin-right: 5px;
+    border-radius: 10px;
+    padding: 1px 5px 1px;
+    color: #444;
+    line-height: 20px;
+}
+
+.ct-card-time {
+    display: inline-block;
+    font-family: 'Source Sans Pro', sans-serif;
+    position: absolute;
+    right: 0;
+    color: #444;
+    line-height: 28px;
+}

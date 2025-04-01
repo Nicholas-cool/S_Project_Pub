@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>S系统-账单详情</title>
+
+    <!-- 导入需要用的插件 -->
+    {% include 'common/head_import.html' %}
+
+    <!-- 导入外部文件 -->
+    {% include 'common/custome_functions/get_select_list_functions.html' %}
+
+    {% include '04_money_arrange/Layer01_AddMoneyRecordLayer.html' %}
+    {% include '04_money_arrange/Layer02_TransferMoneyLayer.html' %}
+    {% include '04_money_arrange/JS03_load_ledger_detail.html' %}
+    {% include '04_money_arrange/JS04_table_advanced_search.html' %}
+</head>
+
+<body onhashchange="load_ledger_detail()">
+
+<!-- MainTop 部分 -->
+<div class="ledger_title_div"
+     style="position: absolute; height: 6%; top: 0; width:100%; background-color: {{ theme.main_top.bgcolor }};">
+    <p id="ledger_title_div_p"
+       style="text-align: left; font-family: '隶书', serif; font-size: 25px; color: {{ theme.main_top.fontcolor }};
+               margin-top: 10px; margin-left: 20px;"> 《xxxx》 账本</p>
+</div>
+
+<!-- MainBody 部分 -->
+<div style="position: absolute; height: 94%; top: 6%; width: 100%; background-color: {{ theme.main_body.bgcolor }};
+            color: {{ theme.main_body.fontcolor }}; font-family: 黑体,serif;">
+
+    <!-- Statistics Card -->
+    <div id="ledger_statistics_card"
+         style="position: absolute; width: 78%; height: 20%; left: 1%; top: 2%; background-color: #2C3E50;
+          border-radius: 10px; padding: 15px 20px 15px; border: 2px solid #abb;
+          font-size: 18px; line-height: 1.8; color: #dee; overflow-y: scroll;">
+        <span>账本 ID：
+            <span id="ledger_id_span" class="custome_span_style"></span>
+        </span>
+        <span style="margin-left: 40px;">账本名称：
+            <span id="ledger_name_span" class="custome_span_style"></span>
+        </span>
+        <span style="margin-left: 40px;">账本类型：
+            <span id="ledger_category_span" class="custome_span_style"></span>
+        </span>
+        <p>账本描述：
+            <span id="ledger_description_span" class="custome_span_style"></span>
+        </p>
+        <hr>
+        <span>日期范围：
+            <span id="ledger_date_range_span" class="custome_span_style"></span>
+        </span>
+        <span style="margin-left: 40px;">总计支出：
+            <span id="ledger_outcome_span" class="custome_span_style"></span>
+        </span>
+        <span style="margin-left: 40px;">总计收入：
+            <span id="ledger_income_span" class="custome_span_style"></span>
+        </span>
+    </div>
+
+    <!-- ToolBar Card -->
+    <div id="toolbar_card"
+         style="position: relative; width: 19%; height: 20%; left: 80%; top: 2%;
+         background-color: #2B2B2B; border-radius: 10px; padding: 8px 10px 10px;
+         border: 2px solid #abb; font-size: 16px; color: #dee; font-family: 黑体,serif;
+         ">
+        <button type="button" class="layui-btn" style="margin-left: 10%; width: 80%; background-color: #336A9D;"
+                onclick="openMoneyHistoryLayer()">每日资金用量
+        </button>
+        <button type="button" class="layui-btn" style="margin-left: 10%; width: 80%; margin-top: 10px;"
+                onclick="openMoneyLineChartLayer()">花销折线统计图
+        </button>
+        <button type="button" class="layui-btn" style="margin-left: 10%; width: 80%; margin-top: 10px;"
+                onclick="openMoneyCategoryChartLayer()">花销分类饼状图
+        </button>
+    </div>
+
+    <!-- Ledger Form Card -->
+    <div id="ledger_form_card"
+         style="position: absolute; width: 98%; height: 76%; left: 1%; top: 23%;
+         border: 2px solid #abb; border-radius: 10px; padding: 20px 10px 10px;
+         font-size: 16px; font-family: 华文楷体,serif; color: #dee;">
+        <!-- 数据表格搜索框 -->
+        <div style="margin-top: 0; font-family: 黑体,serif;">
+            <label style="color: {{ theme.main_top.fontcolor }}; margin-left: 25px;">搜索：</label>
+            <div class="layui-inline" style="width: 36%;">
+                <input class="layui-input" id="money_record_search_input" autocomplete="off"
+                       style="background-color: #eee;">
+            </div>
+            <div class="layui-inline" style="width: 10%;">
+                <select class="layui-input" id="money_record_search_select" autocomplete="off"
+                        style="background-color: #eee;">
+                    <option value="all">全部</option>
+                </select>
+            </div>
+            <button type="button" class="layui-btn"
+                    onclick="search_money_record_form(location.hash.slice(1,))">Search</button>
+            <button type="button" class="layui-btn" style="margin-left:0;"
+                    onclick="reload_money_record_form(location.hash.slice(1,))">Reload</button>
+            <button type="button" class="layui-btn" style="margin-left:0; background-color: #336A9D;"
+                    onclick="openAddMoneyRecordLayer()">Add+
+            </button>
+            <button type="button" class="layui-btn" style="margin-left:0; background-color: #336A9D;"
+                    onclick="openTransferMoneyLayer()">Transfer+
+            </button>
+            <button type="button" class="layui-btn" style="margin-left:0; background-color: #CC8014;"
+                    onclick="openUploadMoneyRecordLayer()">Upload+
+            </button>
+
+            <!-- 高级检索实现 -->
+            <div class="layui-inline" style="width: 100%; margin-left: 25px; margin-top: 10px;">
+                <label style="color: {{ theme.main_top.fontcolor }};">日期：</label>
+                <input type="text" autocomplete="off" id="money_record_search_start_date"
+                       class="layui-input" style="width: 11.1%; display: inline-block; background-color: #ddd;">
+                <label style="color: {{ theme.main_top.fontcolor }};"> - </label>
+                <input type="text" autocomplete="off" id="money_record_search_end_date"
+                       class="layui-input" style="width: 11.1%; display: inline-block; background-color: #ddd;">
+
+                <label style="color: {{ theme.main_top.fontcolor }}; margin-left: 8px;">收支：</label>
+                <select class="layui-input" id="money_record_search_inout_select" autocomplete="off"
+                        onchange="money_record_search_inout_select_change()"
+                        style="background-color: #eee; width: 11%; display: inline-block; margin-left: 0;">
+                    <option value="all">全部</option>
+                    <option value="out">支出</option>
+                    <option value="in">收入</option>
+                </select>
+
+                <label style="color: {{ theme.main_top.fontcolor }}; margin-left: 8px;">类型：</label>
+                <select class="layui-input" id="money_record_search_category_select" autocomplete="off"
+                        style="background-color: #eee; width: 14%; display: inline-block; margin-left: 0;">
+                    <option value="all">全部</option>
+                </select>
+
+                <label style="color: {{ theme.main_top.fontcolor }}; margin-left: 8px;">来源：</label>
+                <select class="layui-input" id="money_record_search_source_select" autocomplete="off"
+                        style="background-color: #eee; width: 14%; display: inline-block; margin-left: 0;">
+                    <option value="all">全部</option>
+                </select>
+            </div>
+        </div>
+
+        <!--  ledger_record 数据表格  -->
+        <div style="width: 98%; margin: 17px 10px 0; height: max-content;">
+            <table id="ledger_record_form" lay-filter="ledger_record_form" style="width:100%;"></table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+
+{% include '04_money_arrange/Table02_LedgerTable.html' %}
+
+<!-- 初始化内容 -->
+<script>
+    window.onload = function () {
+        load_ledger_detail();
+
+        money_record_search_source_select_load();   // 搜索下拉框选项填充
+        render_laydate();                           // 加载 laydate 渲染
+    }
+</script>
+
+<script>
+    function load_ledger_detail() {
+        // 获取账本详情信息
+        let ledger_id = location.hash.slice(1,);
+        $.ajax({
+            url:{% url 'e_get_ledgers' %},
+            type: 'GET',
+            async: false,
+            data: {
+                'ledger_id': ledger_id
+            },
+            success: function (data_dic) {
+                let single_ledger = data_dic[ledger_id];
+
+                document.getElementById('ledger_title_div_p').innerHTML =
+                    ' 《' + single_ledger['name'] + '》 账本';
+
+                document.getElementById('ledger_id_span').innerHTML = ledger_id;
+                document.getElementById('ledger_name_span').innerHTML = single_ledger['name'];
+                document.getElementById('ledger_category_span').innerHTML = single_ledger['category'];
+                document.getElementById('ledger_description_span').innerHTML = single_ledger['desc'];
+
+                document.getElementById('ledger_date_range_span').innerHTML =
+                    single_ledger['start_date'] + ' ~ ' + single_ledger['end_date'];
+                document.getElementById('ledger_outcome_span').innerHTML = single_ledger['outcome_amount'] + ' 元';
+                document.getElementById('ledger_income_span').innerHTML = single_ledger['income_amount'] + ' 元';
+            }
+        })
+    }
+</script>
+
+<style>
+    .custome_span_style {
+        color: #d58512;
+        font-weight: bold;
+        font-family: 幼圆, serif;
+    }
+</style>

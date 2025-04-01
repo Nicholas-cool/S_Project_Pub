@@ -1,0 +1,75 @@
+<script>
+    // money_position_card 加载
+    function load_money_position_card() {
+        $.ajax({
+            url:{% url 'e_get_money_positions' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (data_dic) {
+                let all_circulating_money = 0; // 用于计算总计流动金额
+                let all_all_money = 0;         // 用于计算总计金额
+
+                // 清空原有内容
+                document.getElementById('money_position_circulating').innerHTML = '';
+                document.getElementById('money_position_not_circulating').innerHTML = '';
+                document.getElementById('money_position_unknown').innerHTML = '';
+
+                // 遍历资金位置数据，逐个加入相应位置展示
+                $.each(data_dic, function (i, item) {
+                    if (item['hidden'] === 'no') {  // 如果是hidden的则不显示
+                        if (item['type'] === 'circulating') {
+                            let item_content = '' +
+                                '<div>' + item['name'] + '：' +
+                                '<span id="' + i + '_money" style="position: absolute; right: 20px; ' +
+                                'font-weight: bold;">' + changeTwoDecimal_f(item['money']) + '</span>' +
+                                '</div>' +
+                                '<hr>';
+                            $('#money_position_circulating').append(item_content);
+
+                            all_circulating_money += parseFloat(item['money']);
+                            all_all_money += parseFloat(item['money']);
+                        } else if (item['type'] === 'frozen') {
+                            let item_content = '' +
+                                '<div>' + item['name'] + '：' +
+                                '<span id="' + i + '_money" style="position: absolute; right: 20px; ' +
+                                'font-weight: bold;">' + changeTwoDecimal_f(item['money']) + '</span>' +
+                                '</div>' +
+                                '<hr>';
+                            $('#money_position_not_circulating').append(item_content);
+
+                            all_all_money += parseFloat(item['money']);
+                        } else if (item.type === 'to_be_paid') {
+                            let item_content = '' +
+                                '<div>' + item['name'] + '：' +
+                                '<span id="' + i + '_money" style="position: absolute; right: 20px; ' +
+                                'font-weight: bold;">' + changeTwoDecimal_f(item['money']) +
+                                ' ( +' + changeTwoDecimal_f(parseFloat(item['money']) +
+                                    parseFloat(item['addition_info'])) + ' )' + '</span>' +
+                                '</div>' +
+                                '<hr>';
+                            $('#money_position_not_circulating').append(item_content);
+
+                            all_all_money += parseFloat(item['money']);
+                        } else if (item.type === 'unknown') {
+                             let item_content = '' +
+                                '<div style="background-color: #2b542c; border-radius: 4px; color: #f7a35c;' +
+                                'font-weight: bold;">' +
+                                 item['name'] + '：' +
+                                '<span id="' + i + '_money" style="position: absolute; right: 20px; ' +
+                                'font-weight: bold;">' + changeTwoDecimal_f(item['money']) + '</span>' +
+                                '</div>' +
+                                '<hr>';
+                            $('#money_position_unknown').append(item_content);
+                            all_circulating_money += parseFloat(item['money']);
+                            all_all_money += parseFloat(item['money']);
+                        }
+                    }
+                });
+
+                document.getElementById('all_circulating_money_span').innerHTML = changeTwoDecimal_f(all_circulating_money);
+                document.getElementById('all_all_money_span').innerHTML = changeTwoDecimal_f(all_all_money);
+            }
+        })
+    }
+</script>

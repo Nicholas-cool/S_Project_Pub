@@ -1,0 +1,11 @@
+.layui-timeline-axis {
+    background-color: #393D49;
+}
+
+.layui-timeline-title {
+    color: #dee !important;
+}
+
+.layui-timeline-item {
+    padding-bottom: 5px;
+}

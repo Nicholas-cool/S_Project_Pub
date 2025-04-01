@@ -1,0 +1,215 @@
+<script>
+    // money_record 数据表格加载
+    let money_record_table;
+
+    layui.use('table', function () {
+        let table = layui.table;
+        // LayUI 的表格配置
+        money_record_table = table.render({
+            elem: '#money_record_form',   // 指定容器元素
+            id: 'money_record_form',
+            // height: 312,
+            url: '../e_search_money_record_form',  // 数据接口（分页数据）
+            page: true,   // 开启分页
+            limit: 12,
+            limits: [12, 24, 36, 48, 60],
+            cols: [[  // 表头
+                {field: 'id', title: 'ID', width: '8%', sort: true, unresize: true,
+                 templet: function (d) {
+                    if (d.status === 'to_be_checked'){
+                        return '<span style="color: #f7a35c; font-weight: bold;">' + d.id + '</span>'
+                    } else {
+                        return '<span style="font-weight: bold;">' + d.id + '</span>'
+                    }
+                 }},
+                {field: 'name', title: '名称', width: '14%', sort: true, unresize: true},
+                {field: 'date', title: '日期', width: '10%', sort: true, unresize: true},
+                {
+                    field: 'type',
+                    title: '类型',
+                    width: '12%',
+                    unresize: true,
+                    sort: true,
+                    templet: function (d) {
+                        if (d.type === '待定') {
+                            return '<span style="color: #f7a35c; font-weight: bold;">待定</span>'
+                        } else {
+                            return '<span style="color: #65A9E4; font-weight: bold;">' + d.type + '</span>'
+                        }
+                    }
+                },
+                {
+                    field: 'inout',
+                    title: '收支',
+                    width: '9%',
+                    sort: true,
+                    unresize: true,
+                    templet: function (d) {
+                        if (d.inout === 'out') {
+                            return '<span style="">支出</span>';
+                        } else if (d.inout === 'in') {
+                            return '<span style="">收入</span>';
+                        } else if (d.inout === 'transfer'){
+                            return '<span style="">转移</span>';
+                        }
+                    }
+                },
+                {
+                    field: 'amount', title: '金额', width: '8%', sort: true, unresize: true,
+                    templet: function (d) {
+                        if (parseFloat(d.amount) < 10) {
+                            return '<span style="color: #B0C4DE; font-weight: bold;">' + d.amount + '</span>';
+                        } else if (parseFloat(d.amount) < 50) {
+                            return '<span style="color: #73ABAD; font-weight: bold;">' + d.amount + '</span>';
+                        } else if (parseFloat(d.amount) < 200) {
+                            return '<span style="color: #CBA32B; font-weight: bold;">' + d.amount + '</span>';
+                        } else if (parseFloat(d.amount) < 1000) {
+                            return '<span style="color: #DDA0DD; font-weight: bold;">' + d.amount + '</span>';
+                        } else {
+                            return '<span style="color: #DB7093; font-weight: bold;">' + d.amount + '</span>';
+                        }
+                    }
+                },
+                {
+                    field: 'position',
+                    title: '来源',
+                    width: '11%',
+                    sort: true,
+                    unresize: true,
+                    templet: function (d) {
+                        if (d.position.includes('待定')) {
+                            return '<span style="color: #f7a35c;">' + d.position + '</span>'
+                        } else {
+                            return '<span">' + d.position + '</span>'
+                        }
+                     }
+                },
+                {field: 'description', title: '说明', width: '20%', unresize: true},
+                {field: 'ledger_name', title: '账本', width: '8%', unresize: true},
+            ]]
+        });
+
+        // 表格行单击事件
+        table.on('row(money_record_form)', function (obj) {
+            // alert(obj.data['id']);   // 得到当前行数据
+            tableCheckedRowsRefresh(obj.data['index'], 'money_record_form');  // 刷新选中的行
+        });
+
+        // 表格行双击事件
+        table.on('rowDouble(money_record_form)', function (obj) {
+            // alert(obj.data['id']);  // 得到当前行数据
+
+            if(obj.data['inout'] === 'in' || obj.data['inout'] === 'out'){
+                openAddMoneyRecordLayer_M(obj.data);  // 打开修改资金记录界面
+            } else if(obj.data['inout'] === 'transfer'){
+                openTransferMoneyLayer_M(obj.data); // 打开修改资金转移记录界面
+            }
+        });
+
+        // 右键单击菜单
+        table.on('rowContextmenu(money_record_form)', function (obj) {
+            // 获取当前选中行
+            let now_rows = tableGetRowChecked('money_record_form');
+            if (now_rows.indexOf(obj.data.index) === -1) {  // 当前行不在选中行内
+                tableCheckedRowsRefreshSingle(obj.data.index, 'money_record_form');
+            }
+
+            // 右键操作
+            layui.dropdown.render({
+                trigger: 'contextmenu',
+                show: true,
+                data: [
+                    {title: '加入账本...', id: 'addToLedger'},
+                ],
+                click: function (menuData, othis) {
+                    // alert(menuData.id);
+                    if (menuData.id === 'addToLedger') {
+                        // alert('添加到账本 layer');
+                        openAddToLedgerLayer();
+                    }
+                }
+            });
+        });
+    });
+
+    // 键盘 ctrl 和 shift 按键按下监听
+    $(document).keydown(function (e) {
+        if (e.ctrlKey) {
+            document.getElementById('downingKeyIpt').value = 'ctrl';
+        } else if (e.shiftKey) {
+            document.getElementById('downingKeyIpt').value = 'shift';
+        }
+    }).keyup(function () {
+        document.getElementById('downingKeyIpt').value = '';
+    })
+    // 按下 shift 时，禁止鼠标选中文字（因为选中文字会干扰 shift 键的生效）
+    document.onselectstart = function (event) {
+        if (document.getElementById('downingKeyIpt').value === 'shift') {
+            event.preventDefault();
+        }
+    }
+
+    // 获取现在选中的行索引列表
+    function tableGetRowChecked(table_id, key='idx') {
+        let selectedRows = layui.table.checkStatus(table_id).data;
+        let rows = [];
+        $.each(selectedRows, function (index, data) {
+            if (key === 'idx') {
+                rows.push(data.index);
+            } else if (key === 'id') {
+                rows.push(data.id);
+            }
+        })
+        return rows.sort();
+    }
+
+    // 更新选中行状态
+    function tableCheckedRowsRefresh(row_idx, table_id) {
+        let now_rows = tableGetRowChecked(table_id);
+        let now_key = document.getElementById('downingKeyIpt').value;
+
+        // 清空原有选中的行
+        layui.table.setRowChecked(table_id, {
+            index: 'all',
+            checked: false
+        });
+
+        // 根据情况判断选中哪些行
+        let new_rows = [];
+        if (now_key === 'ctrl') {
+            new_rows = now_rows;
+            if (now_rows.indexOf(row_idx) === -1) {
+                new_rows.push(row_idx);
+            }
+        } else if (now_key === 'shift') {
+            let start_idx = Math.min(now_rows[0], row_idx);
+            let end_idx = Math.max(now_rows[0], row_idx);
+            for (let idx = start_idx; idx <= end_idx; idx++) {
+                new_rows.push(idx);
+            }
+        } else {
+            new_rows.push(row_idx);
+        }
+
+        // 选中新的行
+        layui.table.setRowChecked(table_id, {
+            index: new_rows.sort(),
+            checked: true
+        });
+    }
+
+    // 更新选中行状态（选中单个）
+    function tableCheckedRowsRefreshSingle(row_idx, table_id) {
+        // 清空原有选中的行
+        layui.table.setRowChecked(table_id, {
+            index: 'all',
+            checked: false
+        });
+
+        // 选中新的单行
+        layui.table.setRowChecked(table_id, {
+            index: [row_idx],
+            checked: true
+        });
+    }
+</script>

@@ -1,0 +1,54 @@
+/* 右侧详情栏目默认样式 */
+.ct-right-section {
+    font-size: 16px;
+}
+
+.ct-right-section-item {
+    width: 94%;
+    display: inline-block;
+    position: relative;
+    margin-left: 3%;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+.ct-right-section-item label {
+    line-height: 2.2;
+}
+
+.ct-right-section-item-block {
+    display: inline-block;
+    position: absolute;
+    left: 28%;
+    width: 70%;
+    margin-left: 0;
+}
+
+.ct-right-section-btn {
+    color: #eff;
+    border: 0;
+    font-size: 15px;
+    font-family: 微软雅黑, serif;
+}
+
+.ct-right-section-textarea {
+    display: inline-block;
+    height: 280px;
+    width: 100%;
+    resize: none;
+    font-size: 17px;
+    font-family: 黑体, serif;
+    line-height: 1.4;
+    margin-left: 0;
+    margin-top: 10px;
+}
+
+/** 突出分块 **/
+.ct-right-section-card {
+    border-style: groove;
+    padding: 5px 0 5px;
+    margin-top: 5px;
+    border-width: medium;
+    background-color: #3C3F41;
+    border-color: #E9ECEF;
+}

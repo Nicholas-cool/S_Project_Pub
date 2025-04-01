@@ -1,0 +1,28 @@
+/* calendar-month_grid 今日选中背景颜色 */
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(32, 78, 138, 0.25);
+}
+
+/* calendar-week_grid 今日选中背景颜色 */
+.fc .fc-timegrid-col.fc-day-today {
+    background-color: rgba(32, 78, 138, 0.25);
+}
+
+/* month_grid 每日详细任务弹出表 header */
+.fc-theme-standard .fc-popover-header {
+    background-color: #3C3F41;
+}
+
+.fc .fc-more-popover .fc-popover-body {
+    background-color: #2B2B2B;
+}
+
+/* list_grid 每天的标题展示 bgcolor */
+.fc .fc-list-sticky .fc-list-day > * {
+    background: #181A1F;
+}
+
+/* list_grid 鼠标 hover 时显示颜色 */
+.fc .fc-list-event:hover td {
+    background-color: #3C3F41;
+}

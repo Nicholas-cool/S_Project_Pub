@@ -1,0 +1,92 @@
+/* LayUI Form 样式 */
+
+/* input 组件 disabled 时样式 */
+.layui-input:disabled {
+    background-color: #ccc !important;
+}
+.layui-input:disabled:hover {
+    cursor: not-allowed !important;
+}
+
+/* btn 组件 disabled 时样式 */
+.layui-btn:disabled {
+    background-color: #aaa !important;
+    cursor: not-allowed;
+}
+
+/* textarea 组件 disabled 时样式 */
+.layui-textarea:disabled {
+    background-color: #ccc !important;
+}
+.layui-textarea:disabled:hover {
+    cursor: not-allowed !important;
+}
+
+/* select 组件 disabled 时样式 */
+.layui-select-disabled .layui-disabled {
+    background-color: #ccc;
+    color: black !important;
+}
+
+/* select 组件 下拉列表样式 */
+.layui-form-select dl {
+    max-width: 100%;
+    color: black;
+    margin-bottom: 0;
+    max-height: 240px;
+}
+
+/* 自定义默认样式 */
+/*.layui-form-custome-item-div {*/
+/*    width: 35%;*/
+/*    display: inline-block;*/
+/*    position: relative;*/
+/*}*/
+
+/*.layui-form-custome-item-ipt {*/
+/*    display: inline-block;*/
+/*    position: absolute;*/
+/*    width: 70%;*/
+/*    left: 20%;*/
+/*    background-color: #eee;*/
+/*    z-index: 10;*/
+/*    margin-left: 0;*/
+/*}*/
+
+/*.layui-form-custome-item-select {*/
+/*    display: inline-block;*/
+/*    position: absolute;*/
+/*    left: 20%;*/
+/*    width: 80%;*/
+/*    margin-left: 0;*/
+/*}*/
+
+/*.layui-form-custome-textarea-div {*/
+/*}*/
+
+/*.layui-form-custome-item-textarea {*/
+/*    width: 99%;*/
+/*    height: 20px;*/
+/*    margin-left: 0;*/
+/*}*/
+
+/* 背景颜色设定 */
+.ct-bgcolor-green {
+    background-color: #20B2AA;
+}
+
+.ct-bgcolor-blue {
+    background-color: #3276B1;
+}
+
+.ct-bgcolor-purple {
+    background-color: #7B68EE;
+}
+
+.ct-bgcolor-orange {
+    background-color: #ea8842;
+}
+
+.ct-bgcolor-red {
+    background-color: #FF3E42;
+}

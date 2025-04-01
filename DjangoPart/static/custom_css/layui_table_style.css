@@ -1,0 +1,84 @@
+/*  LayUI Table 样式  */
+
+.layui-btn-xs {
+    height: 26px;
+    line-height: 26px;
+    font-size: 14px;
+}
+
+.layui-table-page {
+    background-color: #3D3E40;
+}
+
+.layui-table {
+    background-color: #2B2B2B;
+    color: #cdd;
+}
+
+.layui-table-tips-main,
+.layui-table-grid-down {
+    background-color: #2B2B2B;
+    color: #cdd;
+}
+
+.layui-table-grid-down:hover {
+    background-color: #2B2B2B;
+}
+
+.layui-table-header {
+    background-color: #3D3E40;
+    color: #eff !important;
+}
+
+.layui-table tbody tr:hover,
+.layui-table thead tr,
+.layui-table-click,
+.layui-table-header,
+.layui-table-hover,
+.layui-table-mend,
+.layui-table-patch,
+.layui-table-tool,
+.layui-table-total,
+.layui-table-total tr,
+.layui-table[lay-even] tr:nth-child(2n) {
+    background-color: #3D3E40;
+}
+
+.layui-table-page .layui-laypage span {
+    color: #eff;
+}
+
+.layui-table-page a {
+    color: #eff !important;
+}
+
+/* 表格行选中样式 */
+.layui-table-checked {
+  background-color: #444;
+}
+
+/* 右键弹出菜单样式 */
+.layui-panel {
+    background-color: #333;
+    border-color: #333;
+}
+
+.layui-menu {
+    background-color: #333;
+}
+
+.layui-menu-body-title {
+    color: #eff;
+    font-family: 微软雅黑, serif;
+}
+
+.layui-menu li:hover {
+    background-color: #555;
+}
+
+/* 表格行按钮 */
+.ct-layui-table-toolbar-btn {
+    color: #eff;
+    height: 25px;
+    font-family: 黑体,serif;
+}

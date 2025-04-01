@@ -1,0 +1,37 @@
+<script>
+    function money_record_auto_complete_get(money_record_name){
+
+        // 获取自动填充规则字典
+        let money_record_rule_list = []
+        $.ajax({
+            url:{% url 'e_get_auto_complete_rules' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (auto_complete_rule_list) {
+                // alert(auto_complete_rule_list);
+                money_record_rule_list = auto_complete_rule_list;
+            }
+        })
+
+        let auto_result_dic = {   // 返回的结果字典
+            'if_detected': 'no',
+            'inout_type': '',
+            'record_type': '',
+            'money_position': '',
+            'money_count': '',
+        }
+
+        for(let idx in money_record_rule_list){
+            if(money_record_name.includes(money_record_rule_list[idx][0])){   // 逐个比对，如果比对成功，则退出
+                auto_result_dic['if_detected'] = 'yes';
+                auto_result_dic['inout_type'] = money_record_rule_list[idx][1];
+                auto_result_dic['record_type'] = money_record_rule_list[idx][2];
+                auto_result_dic['money_position'] = money_record_rule_list[idx][3];
+                auto_result_dic['money_count'] = money_record_rule_list[idx][4];
+                break;
+            }
+        }
+        return auto_result_dic;
+    }
+</script>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>S系统-MoneyArrange</title>
+
+    <!-- 导入需要用的插件 -->
+    {% include 'common/head_import.html' %}
+
+    <!-- 导入外部文件 -->
+    {% include 'common/custome_functions/date_functions.html' %}
+    {% include 'common/custome_functions/get_select_list_functions.html' %}
+    {% include 'common/custome_functions/decimal_functions.html' %}
+    {% include 'common/custome_module/header_nav.html' %}
+
+    {% include '04_money_arrange/04_money_record_auto_complete_data.html' %}
+    {% include '04_money_arrange/Layer01_AddMoneyRecordLayer.html' %}
+    {% include '04_money_arrange/Layer02_TransferMoneyLayer.html' %}
+    {% include '04_money_arrange/Layer03_MoneyLineChartLayer.html' %}
+    {% include '04_money_arrange/Layer04_MoneyCategoryChartLayer.html' %}
+    {% include '04_money_arrange/Layer05_MoneyHistoryLayer.html' %}
+    {% include '04_money_arrange/Layer06_UploadMoneyRecordLayer.html' %}
+    {% include '04_money_arrange/Layer07_AddLedgerLayer.html' %}
+    {% include '04_money_arrange/Layer08_AddToLedgerLayer.html' %}
+    {% include '04_money_arrange/JS01_load_bill_subpage.html' %}
+    {% include '04_money_arrange/JS04_table_advanced_search.html' %}
+</head>
+
+<body onhashchange="header_nav_show()">
+<!-- Main Top -->
+<div style="position: absolute; left: 0; top: 0; height: 5%; width: 100%;">
+    <!-- PSS菜单 -->
+    {% include 'common/PSS_menu.html' %}
+
+    <!-- 顶部导航 nav -->
+    <div style="width: 94%; height: 100%; background-color: {{ theme.main_top.bgcolor }};
+            color: {{ theme.main_top.fontcolor }}; display: inline-block; position: absolute;
+            z-index: 2000; right: 0; top: 0;">
+        <div class="header_nav_section">
+            <label class="header_nav_label">Money |</label>
+            <div class="header_nav_div">
+                <a href="#bill_subpage" class="header_nav_active" onclick="setTimeout(reload_subpage, 10)">账单页面</a>
+                <a href="#ledger_subpage" class="header_nav_negative" onclick="setTimeout(reload_subpage, 10)">账本页面</a>
+                <a href="#fixed_assets_subpage" class="header_nav_negative" onclick="setTimeout(reload_subpage, 10)">固定资产页面</a>
+                <a href="#setting_subpage" class="header_nav_negative" onclick="setTimeout(reload_subpage, 10)">配置页面</a>
+            </div>
+            <button type="button" class="layui-btn-sm ct-bgcolor-purple" style="border: 0; color: #eff;
+                font-weight: bold; border-radius: 2px; position: absolute; right: 20px;"
+                onclick="show_help()">帮助</button>
+        </div>
+    </div>
+</div>
+
+<!-- Main Body -->
+<div style="position: absolute; left: 0; top: 5%; height: 95%; font-size: 14px; overflow-y: auto;
+        width: 100%; background-color: {{ theme.main_body.bgcolor }}; color: {{ theme.main_body.fontcolor }};">
+    <!-- 当前键盘按下的按键 -->
+    <input type="hidden" id="downingKeyIpt" value="">
+
+    <!-- 01_bill_subpage -->
+    {% include "04_money_arrange/Page01_BillSubpage.html" %}
+
+    <!-- 02_ledger_subpage -->
+    {% include "04_money_arrange/Page02_LedgerSubpage.html" %}
+
+    <!-- 03_fixed_assets_subpage -->
+    {% include "04_money_arrange/Page03_FixedAssetsSubpage.html" %}
+
+    <!-- 04_setting_subpage -->
+    {% include "04_money_arrange/Page04_SettingSubpage.html" %}
+</div>
+</body>
+
+<!-- 初始化内容 -->
+{% include '04_money_arrange/Table01_MoneyRecordTable.html' %}
+<script>
+    window.onload = function () {
+        header_nav_show();  // 顶部导航选中显示
+        document.oncontextmenu = function(){ return false; }  // 取消右键弹出菜单
+
+        // Page01 加载
+        load_money_position_card();                 // 加载 money_position_card
+        money_record_search_source_select_load();   // 搜索下拉框选项填充
+        render_laydate();                           // 加载 layDate 渲染
+
+        // Page02 加载
+        load_ledger_page();
+    }
+
+    // 展示帮助内容
+    function show_help(){
+        refresh_archive_time();  // 刷新归档时间展示
+        layer.open({
+            type: 1,
+            offset: 'r',
+            title: '帮助信息',
+            anim: 'slideLeft', // 从右往左
+            area: ['500px', '100%'],
+            shade: 0.5,
+            shadeClose: true,
+            closeBtn: 2,
+            id: 'help-layer',
+            content: $('#help_layer')
+        });
+    }
+
+    // 刷新归档时间展示
+    function refresh_archive_time() {
+        // 获取最近一次归档时间
+        $.ajax({
+            url:{% url 'e_get_last_archive_time' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (archive_time) {
+                $('#last_archive_time_span').text(archive_time);
+            }
+        })
+    }
+
+    // 执行归档
+    function do_money_archive(){
+        if (prompt("请输入 \"archive\" 以确认执行归档") !== "archive") {  // 确认弹窗
+            alert("输入错误！");
+            return;
+        }
+
+        $.ajax({
+            url:{% url 'e_do_money_archive' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (success_info) {
+                alert(success_info);
+                refresh_archive_time();  // 刷新归档时间展示
+            }
+        })
+    }
+</script>
+
+<div id="help_layer" style="color: #eff; padding: 20px; font-size: 16px; display: none;">
+    <div style="color: #ea8842; font-weight: bold; font-family: 微軟正黑體,serif; font-size: 18px;">
+        最近一次归档时间：<span id="last_archive_time_span">xxxx-xx-xx xx:xx</span>
+        <button type="button" class="layui-btn-sm ct-bgcolor-green" style="border: 0; color: #eff;
+                font-weight: bold; border-radius: 2px; margin-left: 15px; position: relative; bottom: 2px;"
+                onclick="do_money_archive()">执行归档</button>
+    </div>
+</div>
