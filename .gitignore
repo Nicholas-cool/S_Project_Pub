@@ -1,0 +1,16 @@
+# IDE 文件夹
+.idea/
+
+# 根目录的一些文件夹
+/data_store/
+/历史存档/
+/发布版本/
+
+# 主要数据库文件
+data.db
+
+# 图像等文件
+media/
+
+# python无用文件
+__pycache__/
