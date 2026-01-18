@@ -1,86 +1,535 @@
 <div id="setting_subpage" class="ct-page-hidden" style="height: 100%; overflow-y: auto; padding: 10px;">
-{#    <!-- 顶部控制栏 -->#}
-{#    <div style="width: 98%; margin: 10px; border: 2px solid #abb; border-radius: 10px;#}
-{#        padding: 10px; font-size: 16px; font-family: 微軟正黑體,serif; font-weight: bold;">#}
-{#        <div class="layui-inline" style="width: 10%;">#}
-{#            <select class="layui-input" id="ledger_order_select" autocomplete="off"#}
-{#                    style="background-color: #ddd;">#}
-{#                <option value="order_end_time">按结束时间排序</option>#}
-{#                <option value="order_start_time">按开始时间排序</option>#}
-{#            </select>#}
-{#        </div>#}
-{#        <button type="button" class="layui-btn" style="margin-left:10px; background-color: #6685c2"#}
-{#                onclick="openAddLedgerLayer()">新增账本+#}
-{#        </button>#}
-{#    </div>#}
-{##}
-{#    <!-- 主体部分 -->#}
-{#    <div id="ledger_container"></div>#}
+    <!-- 主体部分 -->
+    <div class="ct-card-div" style="left: 1%; width: 45%; height: 98%;">
+        <div class="ct-card-div-header">
+            <div class="ct-card-div-header-title">自动填充规则配置</div>
+        </div>
+        <div class="ct-card-div-content">
+            <div id="auto_fill_rule_setting_container"></div>
+            <div class="ct-card-div-footer-btn-div">
+                <button type="button" class="layui-btn ct-card-div-footer-btn"
+                        onclick="openAddAutoCompleteRuleLayer()">添加</button>
+            </div>
+        </div>
+    </div>
 
-    <div style="width: 40%; height: 30%; border: 2px solid #eff; font-size: 22px; padding: 20px;">资金位置配置</div>
-    <div style="width: 40%; height: 30%; border: 2px solid #eff; font-size: 22px; padding: 20px;">收支分类配置</div>
-    <div style="width: 40%; height: 30%; border: 2px solid #eff; font-size: 22px; padding: 20px;">自动填充规则配置</div>
+    <div class="ct-card-div" style="left: 47%; width: 19%; height: 98%;">
+        <div class="ct-card-div-header">
+            <div class="ct-card-div-header-title">收支分类配置</div>
+        </div>
+        <div class="ct-card-div-content">
+            <h3 class="ct_card_h3">收入分类
+                <a onclick="toggle_done_list(this)" class="ct_card_toggle_btn"> ▼ </a>
+            </h3>
+            <div id="income_category_setting_container"></div>
+            <div class="ct-card-div-footer-btn-div">
+                <button type="button" class="layui-btn ct-card-div-footer-btn" 
+                        onclick="setting_add_income_expense_category()">添加</button>
+            </div>
+            <hr>
+            <h3 class="ct_card_h3">支出分类
+                <a onclick="toggle_done_list(this)" class="ct_card_toggle_btn"> ▼ </a>
+            </h3>
+            <div id="expense_category_setting_container"></div>
+            <div class="ct-card-div-footer-btn-div">
+                <button type="button" class="layui-btn ct-card-div-footer-btn" 
+                        onclick="setting_add_income_expense_category()">添加</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="ct-card-div" style="left: 67%; width: 32%; height: 98%;">
+        <div class="ct-card-div-header">
+            <div class="ct-card-div-header-title">资金位置配置</div>
+        </div>
+        <div class="ct-card-div-content">
+            <div id="money_position_setting_container"></div>
+            <div class="ct-card-div-footer-btn-div">
+                <button type="button" class="layui-btn ct-card-div-footer-btn" 
+                        onclick="setting_add_money_position()">添加</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
-    {#function load_ledger_page() {#}
-    {#    $.ajax({#}
-    {#        url:{% url 'e_get_ledgers' %},#}
-    {#        type: 'GET',#}
-    {#        async: false,#}
-    {#        data: {},#}
-    {#        success: function (data_dic) {#}
-    {#            // 清空原有内容#}
-    {#            document.getElementById('ledger_container').innerHTML = '';#}
-    {##}
-    {#            // 遍历数据，渲染账本#}
-    {#            $.each(data_dic, function (i, item) {#}
-    {#                let ledger_item = '' +#}
-    {#                    '<div class="ledger_div">' +#}
-    {#                        '<a class="ledger_a" href="/04a_ledger_detail/#' + i + '" target="_blank">' +#}
-    {#                            '<div class="ledger_title">' + item['name'] + '</div>' +#}
-    {#                            '<div class="ledger_desc">' + item['desc'] + '</div>' +#}
-    {#                        '</a>' +#}
-    {#                    '</div>';#}
-    {#                $('#ledger_container').append(ledger_item);#}
-    {#            });#}
-    {#        }#}
-    {#    })#}
-    {# }#}
+    // 页面内容加载
+    function load_settings_page() {
+        load_settings_page_money_position_card();
+        load_settings_page_income_expense_category_card();
+        load_settings_page_auto_complete_rule_card();
+    }
+
+    // 加载自动填充规则信息
+    function load_settings_page_auto_complete_rule_card(rule_id) {
+        $.ajax({
+            url: {% url 'e_auto_complete_rule' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (data_lst) {
+                if (rule_id && data_lst.some(it => it[0] === rule_id)) {
+                    // 如果 rule_id 存在，则更新单条规则
+                    let item_div = $('#auto_fill_rule_setting_container').find('input[value="' + rule_id + '"]').parent();
+
+                    // 直接替换该 div 的内容
+                    let item = data_lst.find(it => it[0] === rule_id);
+
+                    let inout_option;
+                    if (!item[2]) {
+                        inout_option = "<option value=''></option>";
+                    } else if (item[2] === 'in') {
+                        inout_option = "<option value='in' selected>收入</option>";
+                    } else if (item[2] === 'out') {
+                        inout_option = "<option value='out' selected>支出</option>";
+                    }
+
+                    let category_option;
+                    if (!item[3]) {
+                        category_option = "<option value=''></option>";
+                    } else {
+                        category_option = "<option value='" + item[3] + "' selected>" + item[3] + "</option>";
+                    }
+
+                    let position_option;
+                    if (!item[4]) {
+                        position_option = "<option value=''></option>";
+                    } else {
+                        position_option = "<option value='" + item[4] + "' selected>" + item[7] + "</option>";
+                    }
+
+                    let item_content = '' +
+                        "<div class='settings_item_div'>" +
+                            "<input type='hidden' value='" + rule_id + "'>" +
+                            "<input type='hidden' value='" + item[6] + "'>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 2%; width: 22%;' " +
+                                "value='" + item[1] + "' disabled>" +
+                            "<select class='settings_item_ipt' style='left: 25%; width: 10%;' disabled>" +
+                                inout_option +
+                            "</select>" +
+                            "<select type='text' class='settings_item_ipt' style='left: 36%; width: 17%;' disabled>" +
+                                category_option +
+                            "</select>" +
+                            "<select type='text' class='settings_item_ipt' style='left: 54%; width: 17%;' disabled>" +
+                                position_option +
+                            "</select>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 72%; width: 9%; " +
+                                "font-size: 14px;' value='" + item[5] + "' disabled>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' " +
+                                "style='left: 82%; width: 4%; font-size: 16px;' " +
+                                "onclick='move_auto_fill_rule(this, \"up\")'>↑</button>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' " +
+                                "style='left: 87%; width: 4%; font-size: 16px;' " +
+                                "onclick='move_auto_fill_rule(this, \"down\")'>↓</button>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' " +
+                                "style='left: 92%; width: 8%; background-color: rgb(72, 109, 182);' " +
+                                "onclick='edit_auto_fill_rule(this)'>编辑</button>" +
+                        "</div>";
+
+                    $(item_div).after(item_content);
+                    $(item_div).remove();
+                } else if (rule_id) {
+                    // 如果 info_id 存在，但不存在于 data_dic 中，则删除该规则
+                    $('#auto_fill_rule_setting_container').find('input[value="' + rule_id + '"]').parent().remove();
+                } else {
+                    // 否则更新全部规则内容
+                    $('#auto_fill_rule_setting_container').empty();
+
+                    // 遍历数据，渲染自动填充规则
+                    $.each(data_lst, function (idx, item) {
+                        let inout_option;
+                        if (!item[2]) {
+                            inout_option = "<option value=''></option>";
+                        } else if (item[2] === 'in') {
+                            inout_option = "<option value='in' selected>收入</option>";
+                        } else if (item[2] === 'out') {
+                            inout_option = "<option value='out' selected>支出</option>";
+                        }
+
+                        let category_option;
+                        if (!item[3]) {
+                            category_option = "<option value=''></option>";
+                        } else {
+                            category_option = "<option value='" + item[3] + "' selected>" + item[3] + "</option>";
+                        }
+
+                        let position_option;
+                        if (!item[4]) {
+                            position_option = "<option value=''></option>";
+                        } else {
+                            position_option = "<option value='" + item[4] + "' selected>" + item[7] + "</option>";
+                        }
+
+                        let auto_fill_rule_item = '' +
+                            "<div class='settings_item_div'>" +
+                                "<input type='hidden' value='" + item[0] + "'>" +
+                                "<input type='hidden' value='" + item[6] + "'>" +
+                                "<input type='text' class='settings_item_ipt' style='left: 2%; width: 22%;' " +
+                                    "value='" + item[1] + "' disabled>" +
+                                "<select class='settings_item_ipt' style='left: 25%; width: 10%;' disabled>" +
+                                    inout_option +
+                                "</select>" +
+                                "<select type='text' class='settings_item_ipt' style='left: 36%; width: 17%;' disabled>" +
+                                    category_option +
+                                "</select>" +
+                                "<select type='text' class='settings_item_ipt' style='left: 54%; width: 17%;' disabled>" +
+                                    position_option +
+                                "</select>" +
+                                "<input type='text' class='settings_item_ipt' style='left: 72%; width: 9%; " +
+                                    "font-size: 14px;' value='" + item[5] + "' disabled>" +
+                                "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' " +
+                                    "style='left: 82%; width: 4%; font-size: 16px;' " +
+                                    "onclick='move_auto_fill_rule(this, \"up\")'>↑</button>" +
+                                "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' " +
+                                    "style='left: 87%; width: 4%; font-size: 16px;' " +
+                                    "onclick='move_auto_fill_rule(this, \"down\")'>↓</button>" +
+                                "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' " +
+                                    "style='left: 92%; width: 8%; background-color: rgb(72, 109, 182);' " +
+                                    "onclick='edit_auto_fill_rule(this)'>编辑</button>" +
+                            "</div>";
+                        $('#auto_fill_rule_setting_container').append(auto_fill_rule_item);
+                    });
+                }
+
+                // 刷新所有规则的 priority 数字
+                $('#auto_fill_rule_setting_container').find('.settings_item_div').each(function (index, item) {
+                    // $(item).find('input[type="hidden"]').eq(1).val(index);  // 也可以，取巧的方式
+                    $(item).find('input[type="hidden"]').eq(1).val(
+                        data_lst.find(it => it[0] === $(item).find('input[type="hidden"]').eq(0).val())[6]
+                    );
+                });
+            }
+        })
+    }
+
+    // 加载资金位置信息
+    function load_settings_page_money_position_card() {
+        $.ajax({
+            url: {% url 'e_get_money_positions' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (data_dic) {
+                // 清空原有内容
+                $('#money_position_setting_container').empty();
+
+                // 遍历数据，渲染资金位置
+                $.each(data_dic, function (idx, item) {
+                    // 是否隐藏
+                    let hidden_str = item['hidden'] === 'all' ? '隐藏' : '显示';
+
+                    let money_position_item = '' +
+                        "<div class='settings_item_div'>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 2%; width: 30%;' value='" + item['name'] + "' disabled>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 34%; width: 20%; font-size: 14px;' value='" + item['money'] + "' disabled>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 56%; width: 15%;' value='" + hidden_str + "' disabled>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' style='left: 73%; width: 6%; font-size: 16px;' " +
+                                "onclick='move_money_position(\"" + idx + "\", \"up\")'>↑</button>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' style='left: 81%; width: 6%; font-size: 16px;' " +
+                                "onclick='move_money_position(\"" + idx + "\", \"down\")'>↓</button>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' style='left: 89%; width: 11%; background-color:rgb(72, 109, 182);' " +
+                                "onclick='edit_money_position(\"" + idx + "\")'>编辑</button>" +
+                        "</div>";
+                    $('#money_position_setting_container').append(money_position_item);
+                })
+            }
+        });
+    }
+
+    // 加载收支分类信息
+    function load_settings_page_income_expense_category_card() {
+        $.ajax({
+            url:{% url 'z_get_select_list' %},
+            type: 'GET',
+            async: false,
+            data: {
+                'template': '04_money_arrange',
+                'type': 'select',
+                'desc': 'income_category',
+            },
+            success: function (data_lst) {
+                // 清空原有内容
+                $('#income_category_setting_container').empty();
+
+                // 遍历数据，逐项加入
+                $.each(data_lst, function (i, item) {
+                    let income_expense_category_item = '' +
+                        "<div class='settings_item_div'>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 2%; width: 49%;' value='" + item + "' disabled>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 53%; width: 25%;' value='收入' disabled>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' style='left: 80%; width: 20%; background-color:rgb(72, 109, 182);' " +
+                                "onclick='edit_income_expense_category(\"" + item + "\")'>编辑</button>" +
+                        "</div>";
+                    $('#income_category_setting_container').append(income_expense_category_item);
+                });
+            }
+        })
+
+        $.ajax({
+            url:{% url 'z_get_select_list' %},
+            type: 'GET',
+            async: false,
+            data: {
+                'template': '04_money_arrange',
+                'type': 'select',
+                'desc': 'outcome_category',
+            },
+            success: function (data_lst) {
+                // 清空原有内容
+                $('#expense_category_setting_container').empty();
+
+                // 遍历数据，逐项加入
+                $.each(data_lst, function (i, item) {
+                    let income_expense_category_item = '' +
+                        "<div class='settings_item_div'>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 2%; width: 49%;' value='" + item + "' disabled>" +
+                            "<input type='text' class='settings_item_ipt' style='left: 53%; width: 25%;' value='支出' disabled>" +
+                            "<button type='button' class='layui-btn layui-btn-sm settings_item_btn' style='left: 80%; width: 20%; background-color:rgb(72, 109, 182);' " +
+                                "onclick='edit_income_expense_category(\"" + item + "\")'>编辑</button>" +
+                        "</div>";
+                    $('#expense_category_setting_container').append(income_expense_category_item);
+                });
+            }
+        })
+    }
+
+    // 自动填充规则编辑
+    function edit_auto_fill_rule(btn) {
+        let item_div = $(btn).parent();
+        let rule_id = item_div.find('input[type="hidden"]').eq(0).val();
+        let rule_name = item_div.find('input[type="text"]').eq(0).val();
+        let rule_inout = item_div.find('select').eq(0).val();
+        let rule_category = item_div.find('select').eq(1).val();
+        let rule_position = item_div.find('select').eq(2).val();
+        let rule_amount = item_div.find('input[type="text"]').eq(1).val();
+
+        if (btn.innerText === '编辑') {
+            // 加载选择框选项
+            let inout_select = item_div.find('select').eq(0);
+            inout_select.empty();
+            inout_select.append("<option value=''></option>");
+            inout_select.append("<option value='in'>收入</option>");
+            inout_select.append("<option value='out'>支出</option>");
+            inout_select.val(rule_inout);
+
+            let category_select = item_div.find('select').eq(1);
+            common_get_select_list_by_ele(category_select, '04_money_arrange', rule_inout+'come_category', '', '');
+            category_select.val(rule_category);
+
+            let position_select = item_div.find('select').eq(2);
+            load_money_position_select(position_select, '');
+            position_select.val(rule_position);
+
+            // 切换为编辑状态
+            item_div.find('.settings_item_ipt').prop('disabled', false).
+                css('backgroundColor', '#eee').css('color', '#333');
+            btn.innerText = '保存';
+            btn.style.backgroundColor = '#ea8842';
+        } else if (btn.innerText === '保存') {
+            // 合法性校验
+            if (rule_amount && !Number(rule_amount)) {
+                alert('输入金额不是数字，请重新输入后操作！');
+                return;
+            }
+
+            // 保存编辑内容
+            if (!rule_name) {
+                if (confirm('确定要删除该填充规则吗？')) {
+                    $.ajax({
+                        url: {% url 'e_auto_complete_rule' %},
+                        type: 'DELETE',
+                        async: false,
+                        data: JSON.stringify({
+                            'rule_id': rule_id,
+                        }),
+                        success: function (success_info) {
+                            // alert(success_info);
+                        },
+                    });
+                } else {
+                    return;
+                }
+            } else {
+                $.ajax({
+                    url: {% url 'e_auto_complete_rule' %},
+                    type: 'PUT',
+                    async: false,
+                    data: JSON.stringify({
+                        'rule_id': rule_id,
+                        'rule_name': rule_name,
+                        'rule_inout': rule_inout,
+                        'rule_category': rule_category,
+                        'rule_position': rule_position,
+                        'rule_amount': rule_amount,
+                    }),
+                    success: function (success_info) {
+                        // alert(success_info);
+                    },
+                });
+            }
+            // 刷新单个条目的数据
+            load_settings_page_auto_complete_rule_card(rule_id);
+        }
+    }
+
+    // 移动自动填充规则
+    function move_auto_fill_rule(btn, direction) {
+        let item_div = $(btn).parent();
+
+        let exchange_item;
+        if (direction === 'up') {
+            exchange_item = item_div.prev('.settings_item_div');
+            if (exchange_item.length > 0) {
+                // 交换位置
+                item_div.insertBefore(exchange_item);
+            }
+        } else if (direction === 'down') {
+            exchange_item = item_div.next('.settings_item_div');
+            if (exchange_item.length > 0) {
+                // 交换位置
+                item_div.insertAfter(exchange_item);
+            }
+        } else {
+            return;
+        }
+
+        // 交换优先级数字
+        let current_priority = item_div.find('input[type="hidden"]').eq(1).val();
+        let exchange_priority = exchange_item.find('input[type="hidden"]').eq(1).val();
+        item_div.find('input[type="hidden"]').eq(1).val(exchange_priority);
+        exchange_item.find('input[type="hidden"]').eq(1).val(current_priority);
+        // 更新数据库数据
+        $.ajax({
+            url: {% url 'e_auto_complete_rule' %},
+            type: 'PUT',
+            async: false,
+            data: JSON.stringify({
+                'rule_id': item_div.find('input[type="hidden"]').eq(0).val(),
+                'rule_priority': exchange_priority,
+            }),
+        });
+        $.ajax({
+            url: {% url 'e_auto_complete_rule' %},
+            type: 'PUT',
+            async: false,
+            data: JSON.stringify({
+                'rule_id': exchange_item.find('input[type="hidden"]').eq(0).val(),
+                'rule_priority': current_priority,
+            }),
+        });
+    }
 </script>
 
 <style>
-    {#.ledger_div {#}
-    {#    width: 220px;#}
-    {#    height: 280px;#}
-    {#    margin: 10px;#}
-    {#    display: inline-block;#}
-    {#    border-radius: 10px;#}
-    {#    position: relative;#}
-    {#    background-color: #1b6d85;#}
-    {#    padding: 15px;#}
-    {# }#}
-    {##}
-    {#.ledger_a:hover {#}
-    {#    color: #bbb;#}
-    {# }#}
-    {##}
-    {#.ledger_title {#}
-    {#    position: absolute;#}
-    {#    width: 100%;#}
-    {#    height: 20%;#}
-    {#    font-size: 20px;#}
-    {#    font-family: 微軟正黑體,serif;#}
-    {#    font-weight: bold;#}
-    {# }#}
-    {##}
-    {#.ledger_desc {#}
-    {#    position: absolute;#}
-    {#    top: 20%;#}
-    {#    width: 100%;#}
-    {#    height: 60%;#}
-    {#    font-size: 15px;#}
-    {#    font-family: 微軟正黑體,serif;#}
-    {#    font-weight: bold;#}
-    {# }#}
+.ct-card-div {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    background-color: #3D3E40; 
+    border: 2px solid #abb; 
+    border-radius: 10px; 
+    font-size: 16px; 
+    color: #dee;
+}
+
+.ct-card-div-header {
+    height: 50px;
+    background-color:rgb(87, 64, 51);
+    border-radius: 10px;
+}
+
+.ct-card-div-header-title {
+    font-size: 22px;
+    font-family: 黑体, serif;
+    text-align: left;
+    margin-left: 20px;
+    color: #dee;
+    line-height: 50px;
+}
+
+.ct-card-div-content {
+    flex: 1;
+    padding: 10px;
+    overflow-y: scroll;
+}
+
+.ct-card-div-footer-btn-div {
+    height: 40px;
+    position: relative;
+}
+
+.ct-card-div-footer-btn {
+    width: 80px;
+    font-size: 16px;
+    position: absolute;
+    margin-top: 5px;
+    right: 0;
+    background-color: rgb(106, 70, 192);
+}
+
+.settings_item_div {
+    height: 40px;
+    line-height: 40px;
+    background: #444;
+    position: relative;
+    margin: 8px 0 8px;
+    padding: 0 45px;
+    border-radius: 3px;
+    border-left: 5px solid rgb(90, 129, 187);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
+    width: 100%;
+    color: #eff;
+    font-size: 16px;
+    font-family: 微软雅黑, serif;
+    user-select: none;
+}
+
+.settings_item_ipt {
+    position: absolute;
+    height: 100%;
+    border: none;
+    background-color: #555;
+    color: #eff;
+    font-size: 16px;
+    font-family: 微软雅黑, serif;
+    padding: 0 10px;
+    border-radius: 3px;
+}
+
+.settings_item_btn {
+    position: absolute;
+    height: 100%;
+    background-color:rgb(79, 138, 115);
+    margin-left: 0 !important;
+    font-size: 14px;
+    padding: 0;
+}
+
+.ct_card_h3 {
+    margin-top: 5px;
+    font-size: 20px;
+    position: relative;
+}
+
+.ct_card_toggle_btn {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    display: inline-block;
+    padding: 0 5px;
+    height: 18px;
+    width: 24px;
+    border-radius: 5px;
+    background: #B6C7ED;
+    line-height: 18px;
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.ct_card_toggle_btn:hover {
+    color: #666;
+}
 </style>

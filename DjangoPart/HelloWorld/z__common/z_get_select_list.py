@@ -9,15 +9,15 @@ def z_get_select_list(request):
     l_type = request.GET.get('type')
     desc = request.GET.get('desc')
 
-    # 创建数据库连接，返回连接对象conn，返回游标cur
+    # 创建数据库连接
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
 
     select_list = []
     cur.execute(""" 
-        select DATA from select_list 
-        where TEMPLATE = '%s' and TYPE = '%s' and DESC = '%s';
-    """ % (template, l_type, desc))
+        select data from z_select_list 
+        where template = ? and type = ? and desc = ?;
+    """, (template, l_type, desc))
 
     for item in cur.fetchall():
         select_list.append(item[0])

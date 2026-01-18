@@ -24,8 +24,8 @@ def correspond(line, search_text, search_start_date, search_end_date,
 
     # 来源的验证
     if search_position != 'all':
-        if (search_position != line[5] and ((search_position + '&&') not in line[5]) and
-                (('&&' + search_position) not in line[5])):
+        if (search_position != line[5] and (not str(line[5]).startswith((search_position + '&&')))
+                and (not str(line[5]).endswith('&&' + search_position))):
             return False
 
     # 时间范围的验证

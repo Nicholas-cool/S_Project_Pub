@@ -1,9 +1,10 @@
 <script>
-    // ledger 数据表格加载
+    // ledger 数据表格加载（参数名和 MoneyRecordTabel 一致，由于不在同一个 HTML 中，不相互影响）
     let money_record_table;
+
     layui.use('table', function () {
         let table = layui.table;
-        // Layui 的表格配置
+        // LayUI 的表格配置
         money_record_table = table.render({
             elem: '#ledger_record_form',  // 指定容器元素
             // height: 312,
@@ -87,15 +88,15 @@
             ]]
         });
 
-        // 表格行单击事件
-        {#table.on('rowDouble(ledger_form)', function (obj) {#}
-        {#    // alert(obj.data['id']);  // 得到当前行数据#}
-        {##}
-        {#    if(obj.data['inout'] === 'in' || obj.data['inout'] === 'out'){#}
-        {#        openAddMoneyRecordLayer_M(obj.data);  // 打开修改资金记录界面#}
-        {#    } else if(obj.data['inout'] === 'transfer'){#}
-        {#        openTransferMoneyLayer_M(obj.data); // 打开修改资金转移记录界面#}
-        {#    }#}
-        {# });#}
+        // 表格行双击事件
+        table.on('rowDouble(ledger_record_form)', function (obj) {
+            // alert(obj.data['id']);  // 得到当前行数据
+
+            if(obj.data['inout'] === 'in' || obj.data['inout'] === 'out'){
+                openAddMoneyRecordLayer_M(obj.data);  // 打开修改资金记录界面
+            } else if(obj.data['inout'] === 'transfer'){
+                openTransferMoneyLayer_M(obj.data);   // 打开修改资金转移记录界面
+            }
+        });
     });
 </script>

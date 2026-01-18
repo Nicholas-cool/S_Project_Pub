@@ -95,17 +95,17 @@ def e_upload_money_records(request):
                         values (?, ?, ?, ?); """, ('待定', 'unknown', 'unknown', '0.0', 'no'))
         conn.commit()
 
-    cur.execute(""" select DATA from select_list where TEMPLATE = '%s' and DESC = '%s'; 
+    cur.execute(""" select data from z_select_list where template = '%s' and desc = '%s'; 
                 """ % ('04_money_arrange', 'income_category'))
     if '待定' not in [_[0] for _ in cur.fetchall()]:
-        cur.execute(""" insert into select_list (TEMPLATE, TYPE, DESC, DATA)
+        cur.execute(""" insert into z_select_list (TEMPLATE, TYPE, DESC, DATA)
                         values (?, ?, ?, ?)""", ('04_money_arrange', 'select', 'income_category', '待定'))
         conn.commit()
 
-    cur.execute(""" select DATA from select_list where TEMPLATE = '%s' and DESC = '%s'; 
+    cur.execute(""" select data from z_select_list where template = '%s' and DESC = '%s'; 
                 """ % ('04_money_arrange', 'outcome_category'))
     if '待定' not in [_[0] for _ in cur.fetchall()]:
-        cur.execute(""" insert into select_list (TEMPLATE, TYPE, DESC, DATA)
+        cur.execute(""" insert into z_select_list (template, type, desc, data)
                         values (?, ?, ?, ?)""", ('04_money_arrange', 'select', 'outcome_category', '待定'))
         conn.commit()
 

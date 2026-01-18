@@ -66,11 +66,16 @@ def get_df_wx_new(row, col_name):
                 return service_fee
             else:
                 return 'Nodata'
+    return None
 
 
 def get_df_alipay_new(row, col_name):
     if col_name == 'A_名字':
-        return f'[{row["交易分类"]}] [{row["交易对方"]}]'
+        # 对于部分特殊情况的处理
+        prefix = ''
+        if '因公付(蚂蚁集团)' in str(row['收/付款方式']):
+            prefix = '[-----含因公付-----] '
+        return f'{prefix}[{row["交易分类"]}] [{row["交易对方"]}]'
     elif col_name == 'B_日期':
         return row['交易时间'][:10]
     elif col_name == 'C_收支':
@@ -81,7 +86,15 @@ def get_df_alipay_new(row, col_name):
         elif row['交易状态'] == '交易关闭':
             return 'close'
         else:
-            return 'transfer'
+            # 对于部分特殊情况的处理
+            if '因公付(蚂蚁集团)' in str(row['收/付款方式']):
+                return 'out'
+            elif '余额宝' in str(row['商品说明']) and '收益发放' in str(row['商品说明']):
+                return 'in'
+            elif '退款' in str(row['交易分类']):
+                return 'in'
+            else:
+                return 'transfer'
     elif col_name == 'D_分类':
         return '待定'
     elif col_name == 'E_位置':
@@ -89,6 +102,14 @@ def get_df_alipay_new(row, col_name):
             return 'ant_credit_pay'
         elif '工商银行' in str(row['收/付款方式']):
             return 'icbc'
+        elif '招商银行' in str(row['收/付款方式']):
+            return 'zs_bank'
+        elif '中国银行储蓄卡(3360)' in str(row['收/付款方式']):
+            return 'china_bank'
+        # 余额宝的收支直接归为支付宝账户
+        elif '余额宝' in str(row['收/付款方式']) or '账户余额' in str(row['收/付款方式']):
+            return 'alipay'
+        # 其他的收入默认到支付宝账户
         elif (row['收/支'] == '收入') and (str(row['收/付款方式']) == 'nan'):
             return 'alipay'
         else:
@@ -122,7 +143,7 @@ def get_df_alipay_new(row, col_name):
             if '提现' in row['交易分类']:
                 all_money = float(row['金额'][1:])
                 service_fee = float(row['备注'].replace('服务费', '')[1:])
-                return round(all_money-service_fee, 2)
+                return round(all_money - service_fee, 2)
             else:
                 return 'Nodata'
     elif col_name == 'A4_手续费':
@@ -134,6 +155,7 @@ def get_df_alipay_new(row, col_name):
                 return service_fee
             else:
                 return 'Nodata'
+    return None
 
 
 def e_upload_bill(request):
@@ -143,6 +165,10 @@ def e_upload_bill(request):
 
     bill_source = request.POST.get('bill_source')  # 账单来源
     upload_mode = request.POST.get('upload_mode')  # 上传模式
+
+    assert bill_source in ['wechat_bill', 'alipay_bill'], '账单来源 参数错误'
+
+    origin_data, table_data = None, None
 
     if bill_source == 'wechat_bill':
         # 获取到主体数据部分
@@ -154,7 +180,7 @@ def e_upload_bill(request):
             if '---微信支付账单明细列表---' in wx_line:
                 wx_content = ''
 
-        # 转换成dataframe格式，并处理成需要的数据
+        # 转换成 dataframe 格式，并处理成需要的数据
         df_wx = pd.read_csv(io.StringIO(wx_content))
 
         col_name_new_list = ['A_名字', 'B_日期', 'C_收支', 'D_分类', 'E_位置', 'F_金额', 'G_其他描述',
@@ -182,7 +208,7 @@ def e_upload_bill(request):
                 'status': 'to_be_checked',
             })
 
-    if bill_source == 'alipay_bill':
+    elif bill_source == 'alipay_bill':
         file_content = upload_file.read().decode('ansi')  # 获取文件内容
         # print(file_content)
         # 获取到主体数据部分
@@ -191,9 +217,9 @@ def e_upload_bill(request):
             alipay_content += alipay_line + '\n'
             if '---支付宝' in alipay_line:
                 alipay_content = ''
-
         # print(alipay_content)
-        # 转换成dataframe格式，并处理成需要的数据
+
+        # 转换成 dataframe 格式，并处理成需要的数据
         df_alipay = pd.read_csv(io.StringIO(alipay_content))
 
         col_name_new_list = ['A_名字', 'B_日期', 'C_收支', 'D_分类', 'E_位置', 'F_金额', 'G_其他描述',
@@ -222,7 +248,7 @@ def e_upload_bill(request):
                 'status': 'to_be_checked',
             })
 
-    ''' 按照Layui文件上传所需形式准备 返回数据 '''
+    ''' 按照 LayUI 文件上传所需形式准备 返回数据 '''
     response_result = {
         "code": 0,
         "msg": "",

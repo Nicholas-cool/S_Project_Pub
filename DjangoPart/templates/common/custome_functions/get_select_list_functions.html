@@ -22,4 +22,28 @@
         })
         layui.form.render('select'); // 刷新 LayUI 的 select 框
     }
+
+    function common_get_select_list_by_ele(element, template_name, desc_value, default_value, default_name){
+        $.ajax({
+            url:{% url 'z_get_select_list' %},
+            type: 'GET',
+            async: false,
+            data: {
+                'template': template_name,
+                'type': 'select',
+                'desc': desc_value,
+            },
+            success: function (data_dic) {
+                // 清空原有 option
+                element.empty();
+                element.append('<option value="' + default_value + '">' + default_name + '</option>');
+
+                // 遍历数据 data_dic，逐项添加入 select 列表
+                $.each(data_dic, function (i, item) {
+                    element.append("<option value= " + item + " >" + item + "</option>");
+                });
+            }
+        })
+        layui.form.render('select'); // 刷新 LayUI 的 select 框
+    }
 </script>

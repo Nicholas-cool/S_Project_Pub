@@ -1,6 +1,29 @@
 <div id="add_money_record_layer" class="ct-layui-layer" style="font-size: 15px;">
     <form class="layui-form">
-        <input type="hidden" id="add_money_record_layer_id">
+        <div style="text-align: right; margin-right: 15px;">
+            <!-- 资金记录转换为转移记录按钮 -->
+            <button type="button" id="add_money_record_layer_convert_btn"
+                    class="layui-btn layui-btn-sm ct-bgcolor-blue" disabled
+                    style="margin-right: 10px;" onclick="convertMoneyRecordToTransfer()">转换为转移记录</button>
+            <!-- 模式切换按钮 -->
+            <a href="javascript:void(0);" style="cursor: pointer;" onclick="toggleAddMoneyRecordLayerView()">
+                <span id="add_money_record_layer_toggle_btn_text"
+                      style="font-size: 14px; font-weight: bold; font-family: 幼圆, serif;">完整</span>
+                <img src="{% static 'images/switch.png' %}" alt="切换视图" style="width: 20px; height: 20px;">
+            </a>
+        </div>
+        <!-- 记录原类型，用于记录类型的转换使用 -->
+        <input type="hidden" id="add_money_record_layer_origin_type">
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>记录 ID：</label>
+            <input type="text" autocomplete="off" id="add_money_record_layer_id"
+                   class="layui-input ct-layui-layer-form-item-ipt" disabled>
+        </div>
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>状态：</label>
+            <input type="text" autocomplete="off" id="add_money_record_layer_status"
+                   class="layui-input ct-layui-layer-form-item-ipt" disabled>
+        </div>
         <div class="layui-form-item ct-layui-layer-form-item">
             <label>名字：</label>
             <input type="text" autocomplete="off" id="add_money_record_layer_name" placeholder="请输入资金条目名字"
@@ -27,7 +50,8 @@
         <div class="layui-form-item ct-layui-layer-form-item">
             <label>分类：</label>
             <div class="layui-input-block ct-layui-layer-form-item-select">
-                <select lay-search="" id="add_money_record_layer_type_select">
+                <select lay-search="" id="add_money_record_layer_type_select"
+                        lay-filter="add_money_record_layer_type_select">
                     <option value="">选择分类</option>
                 </select>
             </div>
@@ -35,8 +59,9 @@
         <div class="layui-form-item ct-layui-layer-form-item">
             <label>位置：</label>
             <div class="layui-input-block ct-layui-layer-form-item-select">
-                <select lay-search="" id="add_money_record_layer_money_position_select">
-                    <option value="">选择源位置</option>
+                <select lay-search="" id="add_money_record_layer_money_position_select"
+                        lay-filter="add_money_record_layer_money_position_select">
+                    <option value="">选择资金位置</option>
                 </select>
             </div>
         </div>
@@ -45,17 +70,36 @@
             <input type="text" autocomplete="off" id="add_money_record_layer_amount" placeholder="请输入金额"
                    class="layui-input ct-layui-layer-form-item-ipt">
         </div>
+        <div class="layui-form-item ct-layui-layer-form-item ct-layui-layer-form-item-border">
+            <label>账本：</label>
+            <div class="layui-input-block ct-layui-layer-form-item-select">
+                <select lay-search="" id="add_money_record_layer_ledger_select">
+                    <option value="">请选择账本</option>
+                </select>
+            </div>
+        </div>
         <div class="layui-form-item ct-layui-layer-form-textarea-div">
             <label>其他描述：</label>
             <textarea placeholder="请输入描述" class="layui-textarea ct-layui-layer-form-item-textarea"
                       id="add_account_layer_description" autocomplete="off"></textarea>
         </div>
+        <!-- 保存并查看下一条待确认记录 按钮（默认隐藏，仅在修改层显示） -->
+        <div id="add_money_record_layer_next_to_be_checked_container"
+             style="text-align: right; margin-top: 0; display: none; margin-right: 15px;">
+            <button type="button" id="add_money_record_layer_next_to_be_checked_btn"
+                    class="layui-btn ct-bgcolor-blue" disabled
+                onclick="saveAndViewNextToBeCheckedRecord()">保存并查看下一条待确认记录</button>
+        </div>
     </form>
 </div>
 
 <script>
-    function openAddMoneyRecordLayer(ledger_id = null) {
-        refresh_addmoneyrecord_layer();  // 清空原有数据
+    function openAddMoneyRecordLayer() {
+        refresh_AddMoneyRecord_layer();  // 清空原有数据
+        $('#add_money_record_layer_next_to_be_checked_container').hide();  // 添加模式下隐藏“保存并查看下一条待确认记录”按钮
+        $('#add_money_record_layer_convert_btn').hide();                   // 添加模式下隐藏转换按钮
+        toggleAddMoneyRecordLayerView('clean');                            // 默认使用简洁模式
+
         layer.open({
             type: 1
             , title: '添加资金记录'
@@ -75,13 +119,18 @@
     }
 
     // 清空原有数据
-    function refresh_addmoneyrecord_layer() {
+    function refresh_AddMoneyRecord_layer() {
         // 清空原有分类下拉框的 options，后续根据联动框选择的内容加载
         document.getElementById("add_money_record_layer_type_select").innerHTML = '<option value="">选择分类</option>';
-        refresh_addmoneyrecord_layer_list();  // 加载 money_position 选项
+        // 加载 money_position 选项
+        load_money_position_select($('#add_money_record_layer_money_position_select'), '选择资金位置');
+        // 加载 ledger 选项
+        load_ledger_select_list_for_money('add_money_record_layer_ledger_select');
 
         // 清空原有数据
         let element_select_str = [
+            '#add_money_record_layer_id',
+            '#add_money_record_layer_status',
             '#add_money_record_layer_name',
             '#add_money_record_layer_date',
             '#add_money_record_layer_type_select',
@@ -93,10 +142,65 @@
         for (let idx in element_select_str) {
             $(element_select_str[idx]).val("");
         }
-        layui.form.render('select');  // 刷新select框的加载
+        layui.form.render('select');
 
         // 设置可以编辑
         switch_add_money_record_layer_status('');
+    }
+
+    // 加载账本列表数据
+    function load_ledger_select_list_for_money(select_id){
+        $.ajax({
+            url:{% url 'e_get_ledgers' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (money_ledger_dic) {
+                // 清空原有 option
+                document.getElementById(select_id).innerHTML = '<option value="">请选择账本</option>';
+
+                // 遍历数据，逐项添加
+                $.each(money_ledger_dic, function (ledger_id, ledger_item) {
+                    $("#" + select_id).append("<option value=" + ledger_id + ">" + ledger_item['name'] + "</option>");
+                });
+                layui.form.render('select');
+            }
+        })
+    }
+
+    // 切换显示模式（简洁模式/完整模式）
+    function toggleAddMoneyRecordLayerView(mode) {
+        let toggleBtnText = $('#add_money_record_layer_toggle_btn_text').text();
+        let recordIdElement = $('#add_money_record_layer_id').parent()[0];
+        let recordStatusElement = $('#add_money_record_layer_status').parent()[0];
+        let recordLedgerElement = $('#add_money_record_layer_ledger_select').parent().parent()[0];
+
+        // 获取当前模式
+        let switchToType;
+        if (mode === 'clean') {
+            switchToType = 'clean';
+        } else if (mode === 'complete') {
+            switchToType = 'complete';
+        } else if (toggleBtnText === '简洁') {
+            switchToType = 'complete';
+        } else if (toggleBtnText === '完整') {
+            switchToType = 'clean';
+        } else {
+            alert('切换模式失败，请重新操作！');
+            return;
+        }
+
+        if (switchToType === 'complete') {
+            $('#add_money_record_layer_toggle_btn_text').text('完整');
+            recordIdElement.style.display = 'inline-block';
+            recordStatusElement.style.display = 'inline-block';
+            recordLedgerElement.style.display = 'inline-block';
+        } else {
+            $('#add_money_record_layer_toggle_btn_text').text('简洁');
+            recordIdElement.style.display = 'none';
+            recordStatusElement.style.display = 'none';
+            recordLedgerElement.style.display = 'none';
+        }
     }
 
     // 执行添加记录，回调函数
@@ -108,6 +212,7 @@
         let record_type = $('#add_money_record_layer_type_select').val();
         let record_position = $('#add_money_record_layer_money_position_select').val();
         let record_amount = $('#add_money_record_layer_amount').val();
+        let record_ledger = $('#add_money_record_layer_ledger_select').val();
         let record_desc = $('#add_account_layer_description').val();
 
         // 合法性校验
@@ -124,7 +229,7 @@
 
         // 数据传输
         $.ajax({
-            url:{% url 'e_add_money_record' %},
+            url: {% url 'e_add_money_record' %},
             type: 'POST',
             async: false,
             data: {
@@ -134,11 +239,11 @@
                 'record_type': record_type,
                 'record_position': record_position,
                 'record_amount': record_amount,
+                'record_ledger': record_ledger,
                 'record_desc': record_desc,
             },
             success: function (success_info) {
-                alert(success_info);    // 展示成功信息
-
+                alert(success_info);            // 展示成功信息
                 money_record_table.reload({});  // 表格数据重载
                 load_money_position_card();     // 刷新 money_position_card
             }
@@ -146,63 +251,104 @@
         return true;  // 添加记录成功
     }
 
-    // money_position 下拉框选项加载
-    function refresh_addmoneyrecord_layer_list() {
+    // 资金位置下拉框选项加载
+    function load_money_position_select(select_ele, default_text) {
         $.ajax({
             url:{% url 'e_get_money_positions' %},
             type: 'GET',
             async: false,
             data: {},
-            success: function (data_dic) {
-                // 清空原有option
-                document.getElementById("add_money_record_layer_money_position_select").innerHTML =
-                    '<option value="">选择源位置</option>';
-                // 遍历数据data_dic，逐项添加入select列表
-                $.each(data_dic, function (i, item) {
+            success: function (money_position_dic) {
+                // 清空原有选项
+                select_ele.empty();
+                select_ele.append("<option value=''>" + default_text + "</option>");
+
+                // 遍历数据，逐项加入
+                $.each(money_position_dic, function (i, item) {
                     if(item['hidden'] === 'no'){
-                        $("#add_money_record_layer_money_position_select").append(
-                            "<option value= " + i + " >" + item.name + "</option>");
+                       select_ele.append("<option value= " + i + " >" + item.name + "</option>");
                     }
                 });
+                layui.form.render('select');
             }
         })
     }
 
-    // money_record_type 下拉框选项加载
-    function load_money_record_type_select(inout_type){
-        common_get_select_list('add_money_record_layer_type_select', '04_money_arrange',
-            inout_type+'come_category', '', '选择分类');
+    // 资金记录分类选项加载
+    function load_money_record_type_select(select_ele_id, inout_type){
+        common_get_select_list(select_ele_id, '04_money_arrange', inout_type+'come_category', '', '选择分类');
     }
 
     layui.form.on('select(add_money_record_layer_inout_select)', function (data) {
-        // alert(data.value);  // 当前选中的value
-        load_money_record_type_select(data.value);
+        // alert(data.value);  // 当前选中的 value
+        load_money_record_type_select('add_money_record_layer_type_select', data.value);
     });
 
-    // 根据输入条目名字，自动填充 功能实现
+    layui.form.on('select(add_money_record_layer_type_select)', function (data) {
+       load_EditMoneyRecordLayer_input_style();
+    });
+
+    layui.form.on('select(add_money_record_layer_money_position_select)', function (data) {
+       load_EditMoneyRecordLayer_input_style();
+    });
+
+    // 根据输入条目名字，自动填充
     function auto_fill_money_record(){
-        let money_record_name = document.getElementById('add_money_record_layer_name').value;
-        let auto_result_dic = money_record_auto_complete_get(money_record_name);
+        let auto_result_dic = money_record_auto_complete_get($('#add_money_record_layer_name').val());
 
         if(auto_result_dic['if_detected'] === 'yes'){
-            $('#add_money_record_layer_inout_select').val(auto_result_dic['inout_type']);
-            load_money_record_type_select(auto_result_dic['inout_type']);
-            $('#add_money_record_layer_type_select').val(auto_result_dic['record_type']);
-            $('#add_money_record_layer_money_position_select').val(auto_result_dic['money_position']);
 
-            if(!document.getElementById('add_money_record_layer_amount').value){  // 仅在未输入时生效
-                $('#add_money_record_layer_amount').val(auto_result_dic['money_count']);
+            let inout_select = $('#add_money_record_layer_inout_select');
+            let type_select = $('#add_money_record_layer_type_select');
+            if (!inout_select.val()) {  // 仅在未选择时生效
+                inout_select.val(auto_result_dic['inout_type']);
+                load_money_record_type_select('add_money_record_layer_type_select', auto_result_dic['inout_type']);
+                type_select.val(auto_result_dic['record_type']);
+            } else if (!type_select.val() || type_select.val() === '待定') {  // 仅在未选择分类或选择待定时生效
+                type_select.val(auto_result_dic['record_type']);
             }
 
-            layui.form.render('select'); // 刷新layui的select框
+            let position_select = $('#add_money_record_layer_money_position_select');
+            if (!position_select.val()) {  // 仅在未选择资金位置时生效
+                position_select.val(auto_result_dic['money_position']);
+            }
+
+            let amount_select = $('#add_money_record_layer_amount');
+            if (!amount_select.val()) {  // 仅在未输入金额时生效
+                amount_select.val(auto_result_dic['money_count']);
+            }
+
+            layui.form.render('select');
+            load_EditMoneyRecordLayer_input_style();
         }
     }
 </script>
 
-<!-- 资金记录修改层（复用Layer的HTML代码） -->
+<!-- 资金记录修改层（复用 Layer 的 HTML 代码） -->
 <script>
     function openAddMoneyRecordLayer_M(data) {
-        refresh_addmoneyrecord_layer_M(data);  // 加载原有数据
+        // 加载原有数据（如有 data 传递时）
+        if (data) {
+            refresh_add_money_record_layer_M(data);
+        } else {
+            // 这里也需要加载，防止 data 为 null 的时候没有加载下拉框选项
+            // 加载 money_position 选项
+            load_money_position_select($('#add_money_record_layer_money_position_select'), '选择资金位置');
+            // 加载 ledger 选项
+            load_ledger_select_list_for_money('add_money_record_layer_ledger_select');
+            // 默认使用简洁模式
+            toggleAddMoneyRecordLayerView('clean');
+        }
+
+        // 修改模式下显示“保存并查看下一条待确认记录”按钮（初始禁用，因为默认查看态）
+        $('#add_money_record_layer_next_to_be_checked_container').show();
+        $('#add_money_record_layer_next_to_be_checked_btn').prop('disabled', true);
+        // 修改模式下显示转换按钮
+        $('#add_money_record_layer_convert_btn').show();
+
+        // 输入框样式刷新
+        load_EditMoneyRecordLayer_input_style();
+
         layer.open({
             type: 1
             , title: '修改资金记录'
@@ -227,22 +373,17 @@
             , yes: function (index, layero){
                 let btn0 = layero.find('.layui-layer-btn').find('.layui-layer-btn0');
                 if(btn0.text() === '编辑'){
-                    switch_add_money_record_layer_status('');  // 设置可以编辑
-                    btn0.css({  // 调整按钮样式
-                        'background-color': '#FF8C69',
-                        'border': '1px solid #FF8C69',
-                    });
-                    btn0.text('更新');
+                    switch_add_money_record_layer_status_full('');
                 } else if (btn0.text() === '更新'){
-                    if(do_modify_money_record()){  // 添加数据到数据库
-                        layer.close(index);     // 如果顺利执行，则关闭窗口
+                    if (do_modify_money_record()){  // 添加数据到数据库
+                        layer.close(index);         // 如果顺利执行，则关闭窗口
                      }
                 }
             }
-            , btn2: function (index, layero){
-                if(confirm('是否确认删除该记录？')){
-                    if(do_delete_money_record()){  // 删除该条数据
-                        layer.close(index);     // 如果顺利执行，则关闭窗口
+            , btn2: function (index){
+                if (confirm('是否确认删除该记录？')) {
+                    if (do_delete_money_record()) {  // 删除该条数据
+                        layer.close(index);        // 如果顺利执行，则关闭窗口
                     }
                 }
                 return false;
@@ -251,7 +392,7 @@
     }
 
     // 加载原有数据
-    function refresh_addmoneyrecord_layer_M(data) {
+    function refresh_add_money_record_layer_M(data) {
         $.ajax({
             url:{% url 'e_get_money_record' %},
             type: 'GET',
@@ -260,15 +401,18 @@
                 'record_id': data['id'],
             },
             success: function (record_info) {
-                // 刷新下拉框的选项数据
-                document.getElementById("add_money_record_layer_type_select").innerHTML =
-                    '<option value="">选择分类</option>';
-                refresh_addmoneyrecord_layer_list();  // 加载money_position选项
-                load_money_record_type_select(record_info['inout']);  // 根据收支类型加载分类选项
+                // 加载 money_position 选项
+                load_money_position_select($('#add_money_record_layer_money_position_select'), '选择资金位置');
+                // 加载 ledger 选项
+                load_ledger_select_list_for_money('add_money_record_layer_ledger_select');
+                // 根据收支类型加载分类选项
+                load_money_record_type_select('add_money_record_layer_type_select', record_info['inout']);
 
                 // 填充原有数据
                 let element_id_value_map = {
+                    '#add_money_record_layer_origin_type': record_info['inout'],   // 设置原记录类型隐藏值
                     '#add_money_record_layer_id': record_info['id'],
+                    '#add_money_record_layer_status': record_info['status'],
                     '#add_money_record_layer_name': record_info['name'],
                     '#add_money_record_layer_date': record_info['date'],
                     '#add_money_record_layer_inout_select': record_info['inout'],
@@ -276,16 +420,53 @@
                     '#add_money_record_layer_money_position_select': record_info['position'],
                     '#add_money_record_layer_amount': record_info['amount'],
                     '#add_account_layer_description': record_info['description'],
+                    '#add_money_record_layer_ledger_select': record_info['ledger'],
                 }
                 for (let key_x in element_id_value_map) {
                     $(key_x).val(element_id_value_map[key_x]);
                 }
-                layui.form.render('select');  // 刷新select框的加载
+
+                // 设置当前模式
+                toggleAddMoneyRecordLayerView(record_info['mode']);
+
+                layui.form.render('select');
 
                 // 设置不可编辑
-                switch_add_money_record_layer_status('disabled');
+                switch_add_money_record_layer_status_full('no');
             }
         })
+    }
+
+    // 完全切换是否可编辑状态（包括各类按钮）
+    function switch_add_money_record_layer_status_full(status){
+        if (status === 'no') {
+            // 设置不可编辑
+            switch_add_money_record_layer_status('disabled');
+
+            // 查看态下禁用“保存并查看下一条待确认记录”按钮
+            $('#add_money_record_layer_next_to_be_checked_btn').prop('disabled', true);
+
+            // 主按钮切换为“编辑”蓝色样式与文案
+            let btn0 = $('.layui-layer-btn .layui-layer-btn0');
+            btn0.text('编辑').css({
+                'background-color': '#1E9FFF',
+                'border': '1px solid #1E9FFF',
+            });
+        } else {
+            // 设置可以编辑
+            switch_add_money_record_layer_status('');
+
+            // 编辑态下使“保存并查看下一条待确认记录”按钮可用
+            $('#add_money_record_layer_next_to_be_checked_btn').prop('disabled', false);
+
+            // 主按钮切换为“更新”橙色样式与文案
+            let btn0 = $('.layui-layer-btn .layui-layer-btn0');
+            btn0.text('更新').css({
+                'background-color': '#FF8C69',
+                'border': '1px solid #FF8C69',
+            });
+        }
+        load_EditMoneyRecordLayer_input_style();
     }
 
     // 切换是否可编辑状态
@@ -297,13 +478,18 @@
             'add_money_record_layer_inout_select',
             'add_money_record_layer_money_position_select',
             'add_money_record_layer_amount',
+            'add_money_record_layer_ledger_select',
             'add_account_layer_description',
             'add_money_record_layer_auto_fill_btn',
+            // 保存并查看下一条记录按钮随编辑态启用/禁用
+            'add_money_record_layer_next_to_be_checked_btn',
+            // 转换按钮随编辑态启用/禁用
+            'add_money_record_layer_convert_btn',
         ]
         for (let idx in element_id_list) {
             document.getElementById(element_id_list[idx]).disabled = status;
         }
-        layui.form.render('select');  // 刷新select框的加载
+        layui.form.render('select');
     }
 
     // 执行修改记录，回调函数
@@ -316,7 +502,9 @@
         let record_type = $('#add_money_record_layer_type_select').val();
         let record_position = $('#add_money_record_layer_money_position_select').val();
         let record_amount = $('#add_money_record_layer_amount').val();
+        let record_ledger = $('#add_money_record_layer_ledger_select').val();
         let record_desc = $('#add_account_layer_description').val();
+        let record_origin_type = $('#add_money_record_layer_origin_type').val();
 
         // 合法性校验
         if (!record_name || !record_date || !record_inout || !record_type || !record_position || !record_amount) {
@@ -330,7 +518,19 @@
             return false;
         }
 
-        // ajax实现数据传输
+        // 获取当前模式
+        let toggleBtnText = $('#add_money_record_layer_toggle_btn_text').text();
+        let record_mode;
+        if (toggleBtnText === '简洁') {
+            record_mode = 'clean';
+        } else if (toggleBtnText === '完整') {
+            record_mode = 'complete';
+        } else {
+            alert('获取模式错误，请重新操作！');
+            return false;
+        }
+
+        // 数据传输
         $.ajax({
             url:{% url 'e_modify_money_record' %},
             type: 'POST',
@@ -343,22 +543,21 @@
                 'record_type': record_type,
                 'record_position': record_position,
                 'record_amount': record_amount,
+                'record_ledger': record_ledger,
                 'record_desc': record_desc,
+                'record_mode': record_mode,
+                'record_origin_type': record_origin_type,   // 原记录类型
             },
             success: function (success_info) {
-                alert(success_info);    // 展示成功信息
-
-                // 表格数据重载（会自动保存在当前配置）
-                money_record_table.reload({});
-
-                // 刷新 money_position_card
-                load_money_position_card();
+                alert(success_info);               // 展示成功信息
+                money_record_table.reload({});     // 表格数据重载
+                load_money_position_card();        // 刷新 money_position_card
             }
         })
         return true;  // 修改记录成功
     }
 
-     // 执行删除记录，回调函数
+    // 执行删除记录，回调函数
     function do_delete_money_record() {
         // 获取前端数据
         let record_id = $('#add_money_record_layer_id').val();
@@ -372,12 +571,163 @@
                 'record_id': record_id
             },
             success: function (success_info) {
-                alert(success_info);    // 展示成功信息
-
+                alert(success_info);             // 展示成功信息
                 money_record_table.reload({});   // 表格数据重载
                 load_money_position_card();      // 刷新 money_position_card
             }
         })
         return true;  // 删除记录成功
+    }
+
+    // 获取对应的自动填充规则
+    function money_record_auto_complete_get(money_record_name){
+        let money_record_rule_lst = null;
+        $.ajax({
+            url:{% url 'e_auto_complete_rule' %},
+            type: 'GET',
+            async: false,
+            data: {},
+            success: function (auto_complete_rule_lst) {
+                // alert(auto_complete_rule_lst);
+                money_record_rule_lst = auto_complete_rule_lst;
+            }
+        })
+
+        let auto_result_dic = {   // 返回的结果字典
+            'if_detected': 'no',
+            'inout_type': '',
+            'record_type': '',
+            'money_position': '',
+            'money_count': '',
+        }
+
+        for(let idx in money_record_rule_lst){
+            if(money_record_name.includes(money_record_rule_lst[idx][1])){   // 逐个比对，如果比对成功，则退出
+                auto_result_dic['if_detected'] = 'yes';
+                auto_result_dic['inout_type'] = money_record_rule_lst[idx][2];
+                auto_result_dic['record_type'] = money_record_rule_lst[idx][3];
+                auto_result_dic['money_position'] = money_record_rule_lst[idx][4];
+                auto_result_dic['money_count'] = money_record_rule_lst[idx][5];
+                break;
+            }
+        }
+        return auto_result_dic;
+    }
+
+    // 保存并查看下一条待确认记录
+    function saveAndViewNextToBeCheckedRecord(){
+        // 仅在编辑态下可用，若被禁用则直接返回
+        if($('#add_money_record_layer_next_to_be_checked_btn').prop('disabled')){
+            return;
+        }
+
+        if(do_modify_money_record()){  // 先保存当前修改（内部会 alert 并刷新表格与卡片）
+            let record_id = $('#add_money_record_layer_id').val();
+            $.ajax({
+                url: {% url 'e_get_next_to_be_checked_money_record' %},
+                type: 'GET',
+                async: false,
+                data: { 'current_id': record_id },
+                success: function (res) {
+                    if(res && res['id']){
+                        if (res['inout'] === 'transfer') {
+                            // 关闭当前弹层
+                            layer.closeAll();
+                            // 打开转移记录 Layer
+                            openTransferMoneyLayer_M({'id': res['id']});
+                            // 切换为编辑状态
+                            switch_transfer_money_record_layer_status_full('');
+                        } else if (res['inout'] === 'in' || res['inout'] === 'out') {
+                            // 加载下一条记录数据
+                            refresh_add_money_record_layer_M({'id': res['id']});
+                            // 切换为编辑态
+                            switch_add_money_record_layer_status_full('');
+                        }
+                    } else {
+                        alert('保存成功，已无待确认记录');
+                        // 关闭弹层，避免空状态
+                        layer.closeAll();
+                    }
+                }
+            });
+        }
+    }
+
+    // 从普通记录转换为转移记录（仅预填表单，不直接保存）
+    function convertMoneyRecordToTransfer(){
+        if(!confirm('转换为转移记录将丢失字段：收支项、分类。是否继续？')){
+            return;
+        }
+
+        let id = $('#add_money_record_layer_id').val();
+        let status = $('#add_money_record_layer_status').val();
+        let name = $('#add_money_record_layer_name').val();
+        let date = $('#add_money_record_layer_date').val();
+        let position = $('#add_money_record_layer_money_position_select').val();
+        let amount = $('#add_money_record_layer_amount').val();
+        let desc = $('#add_account_layer_description').val();
+        let originType = $('#add_money_record_layer_origin_type').val();
+        let ledgerId = $('#add_money_record_layer_ledger_select').val();
+
+        layer.closeAll();
+
+        // 将原记录类型传递给转移层，用于后端识别为“普通->转移”的转换
+        openTransferMoneyLayer_M();
+
+        $('#transfer_money_layer_id').val(id);
+        $('#transfer_money_layer_status').val(status);
+        $('#transfer_money_layer_name').val(name);
+        $('#transfer_money_layer_date').val(date);
+        $('#transfer_money_layer_from_position_select').val(position);
+        $('#transfer_money_layer_to_position_select').val("");
+        $('#transfer_money_layer_amount').val(amount);
+        $('#transfer_money_layer_description').val(desc);
+        $('#transfer_money_layer_origin_type').val(originType);
+        $('#transfer_money_layer_ledger_select').val(ledgerId);
+        $('#transfer_money_layer_fee').val("");
+        layui.form.render('select');
+
+        // 切换为编辑态
+        switch_transfer_money_record_layer_status_full('');
+    }
+
+    // 更新输入框内容样式
+    function load_EditMoneyRecordLayer_input_style(){
+        console.log(new Date() + '触发样式刷新');
+
+        let font_color = '#d7794b';    // 橙色
+        let font_color_2 = '#ba49f9';  // 紫色
+
+        let money_type_selector = $('#add_money_record_layer_type_select');
+        if ($(money_type_selector).val() === '待定') {
+            $(money_type_selector).parent().find('input').css(
+                "cssText", 'font-weight: bold; color: ' + font_color + ' !important;'
+            )
+        } else {
+            $(money_type_selector).parent().find('input').css(
+                "cssText", 'font-weight: normal; color: initial !important;'
+            )
+        }
+
+        let money_position_selector = $('#add_money_record_layer_money_position_select');
+        if ($(money_position_selector).val() === 'unknown') {
+            $(money_position_selector).parent().find('input').css(
+                "cssText", 'font-weight: bold; color: ' + font_color + ' !important;'
+            )
+        } else {
+            $(money_position_selector).parent().find('input').css(
+                "cssText", 'font-weight: normal; color: initial !important;'
+            )
+        }
+
+        if ($('#add_money_record_layer_status').val() === 'to_be_checked') {
+            $('#add_money_record_layer_id').css(
+                "cssText", 'font-weight: bold; color: ' + font_color + ' !important;'
+            )
+        } else {
+            $('#add_money_record_layer_id').css(
+                "cssText", 'font-weight: normal; color: initial !important;'
+            )
+        }
     }
 </script>

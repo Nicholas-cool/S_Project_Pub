@@ -11,7 +11,10 @@ def e_get_money_positions(request):
 
     # 获取 money_position 对应中文信息
     money_position_dic = {}
-    cur.execute(""" select name_en, name, money, type, addition_info, hidden from e_money_position; """)
+    cur.execute(""" 
+        select name_en, name, money, type, addition_info, hidden, order_num 
+        from e_money_position order by order_num; 
+    """)
     for line in cur.fetchall():
         money_position_dic[line[0]] = {
             'name': line[1],
@@ -19,6 +22,7 @@ def e_get_money_positions(request):
             'type': line[3],
             'addition_info': line[4],
             'hidden': line[5],
+            'order_num': line[6],
         }
 
     # 关闭数据库连接

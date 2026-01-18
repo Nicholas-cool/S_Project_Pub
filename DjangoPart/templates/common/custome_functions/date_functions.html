@@ -1,4 +1,107 @@
+<!-- 引入 LunarCalendar -->
+<script src="{% static 'plugins/lunarcalendar/LunarCalendar.min.js' %}"></script>
+
 <script>
+    // 根据字符串检测日期精度
+    function detect_date_precision(date_str) {
+        if (/^\d{4}$/.test(date_str)) {
+            return 'year';
+        }
+        if (/^\d{4}-\d{2}$/.test(date_str)) {
+            return 'month';
+        }
+        if (/^\d{4}-\d{2}-\d{2}$/.test(date_str)) {
+            return 'date';
+        }
+        return 'invalid';
+    }
+
+    // 解析目标日期年、月、日分量
+    function parse_target_ymd(date_str, type) {
+        if (type === 'year') {
+            let y = parseInt(date_str, 10);
+            if (!y) {
+                return null;
+            }
+            return { year: y, month: 1, day: 1 };
+        } else if (type === 'month') {
+            let mParts = date_str.split('-');
+            let y2 = parseInt(mParts[0], 10);
+            let m2 = parseInt(mParts[1], 10);
+            if (!y2 || !m2 || m2 < 1 || m2 > 12) {
+                return null;
+            }
+            return { year: y2, month: m2, day: 1 };
+        } else if (type === 'date') {
+            let dParts = date_str.split('-');
+            let y3 = parseInt(dParts[0], 10);
+            let m3 = parseInt(dParts[1], 10);
+            let d3 = parseInt(dParts[2], 10);
+            if (!y3 || !m3 || !d3 || m3 < 1 || m3 > 12 || d3 < 1 || d3 > 31) {
+                return null;
+            }
+            return { year: y3, month: m3, day: d3 };
+        }
+        return null;
+    }
+
+    // 计算 Y/M/D 差，返回 { sign: 1 | -1, year, month, day }
+    function diffYmdCalendar(fromDate, toDate) {
+        let sign = 1;
+        let from_date = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate());
+        let to_date = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate());
+        if (to_date.getTime() < from_date.getTime()) {
+            sign = -1;
+            let tmp = from_date; from_date = to_date; to_date = tmp;
+        }
+        // console.log(sign, '|', from_date, '|', to_date);
+
+        // 计算年差值
+        let years = to_date.getFullYear() - from_date.getFullYear();
+        let t = new Date(from_date.getFullYear() + years, from_date.getMonth(), from_date.getDate());
+        if (t.getTime() > to_date.getTime()) {
+            years -= 1;
+            t = new Date(t.getFullYear() - 1, t.getMonth(), t.getDate());
+        }
+        // console.log(years, '|', t, '|', to_date);
+
+        // 计算月差值
+        let total_t_month = t.getFullYear() * 12 + t.getMonth();
+        let total_to_month = to_date.getFullYear() * 12 + to_date.getMonth();
+        let months = total_to_month - total_t_month;
+
+        // 使用 t_new，防止月份天数不够的问题
+        let t_new = new Date(t.getFullYear(), t.getMonth() + months, t.getDate());
+        if (t_new.getTime() > to_date.getTime()) {
+            months -= 1;
+            t_new = new Date(t.getFullYear(), t.getMonth() + months, t.getDate());
+        }
+        // console.log(months, '|', t, '|', to_date);
+
+        // 计算日差值
+        let msPerDay = 24 * 60 * 60 * 1000;
+        let days = Math.round((to_date.getTime() - t_new.getTime()) / msPerDay);
+        // console.log(years, '|', months, '|', days);
+
+        return { sign: sign, year: years, month: months, day: days };
+    }
+
+    // 格式化输出（sign：正负号；items：具体内容；lowestUnit：最小单位）
+    function format_units(sign, items, lowestUnit) {
+        let parts = [];
+        for (let i = 0; i < items.length; i++) {
+            let it = items[i];
+            if (it.value) {
+                parts.push(String(it.value) + ' ' + it.unit);
+            }
+        }
+        // 若没有内容，则返回 0 + 最低单位
+        if (parts.length === 0) {
+            return '0' + ' ' + lowestUnit;
+        }
+        return (sign ? sign : '') + parts.join(' ');
+    }
+
     // date 对象转化为字符串
     function dateToFormatString_Day(date) {
         let y = date.getFullYear();
@@ -162,5 +265,22 @@
         const date = new Date(str);
         // 如果日期不是 NaN，则它是一个合法的日期
         return !isNaN(date.getTime());
+    }
+
+    /* 生日转农历 */
+    function birth_to_lunar(birth_str) {
+        if (!birth_str || /^(?:(\d{2}-\d{2})|(\d{4}-\d{2}-\d{2})(Y))$/.test(birth_str)) {
+            return "无";
+        } else if (/^(?:(\d{2}-\d{2})(N))$/.test(birth_str)) {
+            let solarDate = LunarCalendar.lunarToSolar(2000, birth_str.split('-')[0], birth_str.split('-')[1].slice(0, -1));
+            let lunarDate = LunarCalendar.solarToLunar(solarDate.year, solarDate.month, solarDate.day);
+            return lunarDate.lunarMonthName + lunarDate.lunarDayName;
+        } else {
+            let birth_date_str = birth_str.slice(-1) === 'N' ? birth_str.slice(0, -1) : birth_str;
+            // 通过阳历日期获取农历日期
+            let lunarDate = LunarCalendar.solarToLunar(birth_date_str.split('-')[0],
+                parseInt(birth_date_str.split('-')[1]), parseInt(birth_date_str.split('-')[2]));
+            return lunarDate.lunarMonthName + lunarDate.lunarDayName;
+        }
     }
 </script>

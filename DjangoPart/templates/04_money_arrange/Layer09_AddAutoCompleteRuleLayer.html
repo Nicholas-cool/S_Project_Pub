@@ -1,0 +1,133 @@
+<div id="add_auto_complete_rule_layer" class="ct-layui-layer">
+    <form class="layui-form">
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>触发词：</label>
+            <input type="text" autocomplete="off" id="add_auto_complete_rule_layer_name"
+                   placeholder="请输入自动补全规则触发词"
+                   class="layui-input ct-layui-layer-form-item-ipt ct-layer-js-fresh">
+        </div>
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>位置：</label>
+            <div class="layui-input-block ct-layui-layer-form-item-select">
+                <select id="add_auto_complete_rule_layer_position_select" class="ct-layer-js-fresh"
+                        lay-filter="add_auto_complete_rule_layer_position_select">
+                    <option value="">选择资金位置</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>收支项：</label>
+            <div class="layui-input-block ct-layui-layer-form-item-select">
+                <select id="add_auto_complete_rule_layer_inout_select" class="ct-layer-js-fresh"
+                        lay-filter="add_auto_complete_rule_layer_inout_select">
+                    <option value="">选择收支类型</option>
+                    <option value="out">支出</option>
+                    <option value="in">收入</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>类型：</label>
+            <div class="layui-input-block ct-layui-layer-form-item-select">
+                <select id="add_auto_complete_rule_layer_category_select" class="ct-layer-js-fresh"
+                        lay-filter="add_auto_complete_rule_layer_category_select">
+                    <option value="">选择分类</option>
+                </select>
+            </div>
+        </div>
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>金额：</label>
+            <input type="text" autocomplete="off" id="add_auto_complete_rule_layer_amount"
+                   placeholder="请输入金额" class="layui-input ct-layui-layer-form-item-ipt ct-layer-js-fresh">
+        </div>
+        <div class="layui-form-item ct-layui-layer-form-item">
+            <label>优先级：</label>
+            <input type="text" autocomplete="off" id="add_auto_complete_rule_layer_priority"
+                   placeholder="请输入优先级" class="layui-input ct-layui-layer-form-item-ipt ct-layer-js-fresh">
+        </div>
+        <hr>
+        <div style="height: 180px;"></div>
+    </form>
+</div>
+
+<script>
+    function openAddAutoCompleteRuleLayer() {
+        // 确保没有处于编辑状态的规则，才能添加新的规则（由于要整体刷新，防止数据丢失）
+        let all_disabled = $('#auto_fill_rule_setting_container input[type="text"]')
+            .toArray().every(el => el.disabled === true);
+        if (!all_disabled) {
+            alert('请确保所有规则处于非编辑状态！');
+            return false;
+        }
+
+        // 清空原有数据
+        refresh_layer('add_auto_complete_rule_layer');
+        // 清空分类下拉框的选项
+        document.getElementById("add_auto_complete_rule_layer_category_select").innerHTML =
+            '<option value="">选择分类</option>';
+        // 加载 money_position 选项
+        load_money_position_select($('#add_auto_complete_rule_layer_position_select'), '选择资金位置');
+
+        layer.open({
+            type: 1
+            , title: '添加自动填充规则'
+            , area: '800px;'
+            , shade: 0.8
+            , id: 'add_auto_complete_rule_layer'
+            , btn: ['添加']
+            , btnAlign: 'c'
+            , closeBtn: 2
+            , content: $("#add_auto_complete_rule_layer")
+            , yes: function (index){
+                if(do_add_auto_complete_rule()){  // 添加数据到数据库
+                    layer.close(index);           // 如果顺利执行，则关闭窗口
+                }
+            }
+        });
+    }
+
+    layui.form.on('select(add_auto_complete_rule_layer_inout_select)', function (data) {
+        // alert(data.value);  // 当前选中的 value
+        load_money_record_type_select('add_auto_complete_rule_layer_category_select', data.value);
+    });
+
+    // 执行添加
+    function do_add_auto_complete_rule() {
+        // 获取前端数据
+        let rule_name = $('#add_auto_complete_rule_layer_name').val();
+        let rule_position = $('#add_auto_complete_rule_layer_position_select').val();
+        let rule_inout = $('#add_auto_complete_rule_layer_inout_select').val();
+        let rule_category = $('#add_auto_complete_rule_layer_category_select').val();
+        let rule_amount = $('#add_auto_complete_rule_layer_amount').val();
+        let rule_priority = $('#add_auto_complete_rule_layer_priority').val();
+
+        // 合法性校验
+        if (!rule_name) {
+            alert('触发词未填写，请重新输入后操作！');
+            return false;
+        } else if ((rule_amount && !Number(rule_amount)) || (rule_priority && !Number(rule_priority))) {
+            alert('输入金额或优先级不是数字，请重新输入后操作！');
+            return false;
+        }
+
+        // 数据传输
+        $.ajax({
+            url:{% url 'e_auto_complete_rule' %},
+            type: 'POST',
+            async: false,
+            data: {
+                'rule_name': rule_name,
+                'rule_position': rule_position,
+                'rule_inout': rule_inout,
+                'rule_category': rule_category,
+                'rule_amount': rule_amount,
+                'rule_priority': rule_priority
+            },
+            success: function (success_info) {
+                alert(success_info);
+                load_settings_page_auto_complete_rule_card();
+            }
+        })
+        return true;  // 添加记录成功
+    }
+</script>

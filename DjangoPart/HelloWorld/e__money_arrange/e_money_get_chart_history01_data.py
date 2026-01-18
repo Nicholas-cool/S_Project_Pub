@@ -10,7 +10,7 @@ def e_money_get_chart_history01_data(request):
     time_data = request.GET.get('time_data')
     check_position = request.GET.get('check_position')
 
-    # 创建数据库连接，返回连接对象conn，返回游标cur
+    # 创建数据库连接
     conn = sqlite3.connect('data.db')
     cur = conn.cursor()
 
@@ -56,9 +56,9 @@ def e_money_get_chart_history01_data(request):
                     result_dic[date_str]['money_remain'] -= money_amount
                 elif money_inout == 'out' and check_position == money_position:
                     result_dic[date_str]['money_remain'] += money_amount
-                elif money_inout == 'transfer' and ((check_position + '&&') in money_position):
+                elif money_inout == 'transfer' and (str(money_position).startswith(check_position + '&&')):
                     result_dic[date_str]['money_remain'] += money_amount + money_fee
-                elif money_inout == 'transfer' and (('&&' + check_position) in money_position):
+                elif money_inout == 'transfer' and (str(money_position).endswith('&&' + check_position)):
                     result_dic[date_str]['money_remain'] -= money_amount
     else:
         # 查询得到当前的资金余量

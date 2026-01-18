@@ -1,0 +1,9 @@
+<script>
+    // 清空 Layer 中原有数据 （以 class 是 ct-layer-js-fresh 为标志）
+    function refresh_layer(layer_id) {
+        $('#' + layer_id).find('.ct-layer-js-fresh').each(function() {
+            $(this).val("");
+        });
+        layui.form.render('select');
+    }
+</script>

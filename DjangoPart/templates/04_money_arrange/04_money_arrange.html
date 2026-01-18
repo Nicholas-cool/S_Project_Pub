@@ -9,11 +9,11 @@
 
     <!-- 导入外部文件 -->
     {% include 'common/custome_functions/date_functions.html' %}
+    {% include 'common/custome_functions/layer_functions.html' %}
     {% include 'common/custome_functions/get_select_list_functions.html' %}
     {% include 'common/custome_functions/decimal_functions.html' %}
     {% include 'common/custome_module/header_nav.html' %}
 
-    {% include '04_money_arrange/04_money_record_auto_complete_data.html' %}
     {% include '04_money_arrange/Layer01_AddMoneyRecordLayer.html' %}
     {% include '04_money_arrange/Layer02_TransferMoneyLayer.html' %}
     {% include '04_money_arrange/Layer03_MoneyLineChartLayer.html' %}
@@ -22,6 +22,7 @@
     {% include '04_money_arrange/Layer06_UploadMoneyRecordLayer.html' %}
     {% include '04_money_arrange/Layer07_AddLedgerLayer.html' %}
     {% include '04_money_arrange/Layer08_AddToLedgerLayer.html' %}
+    {% include '04_money_arrange/Layer09_AddAutoCompleteRuleLayer.html' %}
     {% include '04_money_arrange/JS01_load_bill_subpage.html' %}
     {% include '04_money_arrange/JS04_table_advanced_search.html' %}
 </head>
@@ -85,6 +86,9 @@
 
         // Page02 加载
         load_ledger_page();
+
+        // Page04 加载
+        load_settings_page();
     }
 
     // 展示帮助内容
@@ -139,10 +143,20 @@
 </script>
 
 <div id="help_layer" style="color: #eff; padding: 20px; font-size: 16px; display: none;">
-    <div style="color: #ea8842; font-weight: bold; font-family: 微軟正黑體,serif; font-size: 18px;">
+    <div style="color: #ea8842; font-weight: bold; font-family: 微軟正黑體, serif; font-size: 18px;">
         最近一次归档时间：<span id="last_archive_time_span">xxxx-xx-xx xx:xx</span>
         <button type="button" class="layui-btn-sm ct-bgcolor-green" style="border: 0; color: #eff;
                 font-weight: bold; border-radius: 2px; margin-left: 15px; position: relative; bottom: 2px;"
                 onclick="do_money_archive()">执行归档</button>
     </div>
+    <hr>
+    <div>
+        <div style="margin-top: 15px; margin-bottom: 6px; font-size: 20px; font-weight: bold;">资金归档流程说明</div>
+        <div style="font-size: 16px; line-height: 32px; font-family: 微軟正黑體, serif; font-weight: bold;">
+            <span> - 按照 money_position 依次导入并检查资金记录</span><br>
+            <span> - 再次检查所有 money_position 现有资金准确，执行归档</span><br>
+            <span> - 各个页面的统计信息查看</span>
+        </div>
+    </div>
+    <hr>
 </div>
