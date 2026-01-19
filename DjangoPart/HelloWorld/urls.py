@@ -24,11 +24,12 @@ from django.views.generic.base import RedirectView
 from .e__money_arrange import e_show_money_arrange, e_get_money_positions, \
     e_add_money_record, e_add_money_transfer_record, e_money_get_chart01_data, e_money_get_chart02_data, \
     e_money_get_chart03_data, e_money_get_chart_history01_data, e_get_money_record, e_modify_money_record, \
-    e_delete_money_record, e_modify_money_transfer_record, e_delete_money_transfer_record, e_upload_bill, \
-    e_upload_money_records, e_get_auto_complete_rules, e_search_money_record_form, e_get_ledgers, e_add_ledger, \
-    e_modify_record_ledger, e_get_last_archive_time, e_do_money_archive
+    e_delete_money_record, e_modify_money_transfer_record, e_upload_bill, \
+    e_upload_money_records, e_search_money_record_form, e_get_ledgers, e_add_ledger, \
+    e_modify_record_ledger, e_get_last_archive_time, e_do_money_archive, e_auto_complete_rule, \
+    e_get_next_to_be_checked_money_record
 
-from .z__common import z_get_select_list, z_get_quotation, z_stream_video, z_check_secret_order
+from .z__common import z_login, z_get_select_list, z_get_quotation, z_stream_video, z_check_secret_order, z_storage_list
 
 
 url_names = [
@@ -42,7 +43,6 @@ url_names = [
     ('e_modify_money_record', e_modify_money_record.e_modify_money_record),
     ('e_modify_money_transfer_record', e_modify_money_transfer_record.e_modify_money_transfer_record),
     ('e_delete_money_record', e_delete_money_record.e_delete_money_record),
-    ('e_delete_money_transfer_record', e_delete_money_transfer_record.e_delete_money_transfer_record),
     ('e_add_money_transfer_record', e_add_money_transfer_record.e_add_money_transfer_record),
     ('e_money_get_chart01_data', e_money_get_chart01_data.e_money_get_chart01_data),
     ('e_money_get_chart02_data', e_money_get_chart02_data.e_money_get_chart02_data),
@@ -50,21 +50,27 @@ url_names = [
     ('e_money_get_chart_history01_data', e_money_get_chart_history01_data.e_money_get_chart_history01_data),
     ('e_upload_bill', e_upload_bill.e_upload_bill),
     ('e_upload_money_records', e_upload_money_records.e_upload_money_records),
-    ('e_get_auto_complete_rules', e_get_auto_complete_rules.e_get_auto_complete_rules),
     ('e_get_ledgers', e_get_ledgers.e_get_ledgers),
     ('e_add_ledger', e_add_ledger.e_add_ledger),
     ('e_modify_record_ledger', e_modify_record_ledger.e_modify_record_ledger),
     ('e_get_last_archive_time', e_get_last_archive_time.e_get_last_archive_time),
     ('e_do_money_archive', e_do_money_archive.e_do_money_archive),
+    ('e_auto_complete_rule', e_auto_complete_rule.EAutoCompleteRule.as_view()),
+    ('e_get_next_to_be_checked_money_record', e_get_next_to_be_checked_money_record.e_get_next_to_be_checked_money_record),
 
     # common 部分
     ('z_get_select_list', z_get_select_list.z_get_select_list),
     ('z_get_quotation', z_get_quotation.z_get_quotation),
     ('z_stream_video', z_stream_video.z_stream_video),
     ('z_check_secret_order', z_check_secret_order.z_check_secret_order),
+    ('z_storage_list', z_storage_list.z_storage_list),
+    ('z_login', z_login.z_login_view),
+    ('z_logout', z_login.z_logout_view),
 ]
 
 urlpatterns = [
     re_path(r'^media/(?P<path>.*)', serve, {"document_root": settings.MEDIA_ROOT}),  # 允许 /media/ 路径访问
-    path('favicon.ico', RedirectView.as_view(url=r'static/images/favicon.ico')),  # 网页图标
+    path('favicon.ico', RedirectView.as_view(url=r'static/images/favicon.ico')),     # 网页图标
+    path('', e_show_money_arrange.e_show_money_arrange),                             # 默认首页
+
 ] + [path(url_name+'/', url_view, name=url_name) for url_name, url_view in url_names]
